@@ -1,8 +1,8 @@
 const { DataTypes } = require('sequelize');
-const { masterSequelize } = require('../config/db'); // Use the masterSequelize instance
-const Tenant = require('./tenant');
+const { sequelize } = require('../config/db');
+const Tenant = require('./tenant'); // Import Tenant model
 
-const SubscriptionPlan = masterSequelize.define(
+const SubscriptionPlan = sequelize.define(
   'SubscriptionPlan',
   {
     Id: {
@@ -39,7 +39,7 @@ const SubscriptionPlan = masterSequelize.define(
       type: DataTypes.STRING(10), // Matches tenantId in SQL schema
       allowNull: false,
       references: {
-        model: 'Tenants', // Ensure this matches the tenant table's name
+        model: 'Tenant', // Ensure this matches the tenant table's name
         key: 'Id',
       },
     },
@@ -47,20 +47,20 @@ const SubscriptionPlan = masterSequelize.define(
       type: DataTypes.NUMERIC(18, 0),
       allowNull: true,
     },
-    CreatedDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW, // Matches DEFAULT (getdate())
-    },
+    // CreatedDate: {
+    //   type: DataTypes.DATE,
+    //   allowNull: false,
+    //   defaultValue: DataTypes.NOW, // Matches DEFAULT (getdate())
+    // },
     UpdatedBy: {
       type: DataTypes.NUMERIC(18, 0),
       allowNull: true,
     },
-    UpdatedDate: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: DataTypes.NOW, // Matches DEFAULT (getdate())
-    },
+    // UpdatedDate: {
+    //   type: DataTypes.DATE,
+    //   allowNull: true,
+    //   defaultValue: DataTypes.NOW, // Matches DEFAULT (getdate())
+    // },
   },
   {
     schema: 'subscribe', // Specify the schema explicitly
@@ -70,8 +70,10 @@ const SubscriptionPlan = masterSequelize.define(
 );
 
 // Define Relationships
-SubscriptionPlan.belongsTo(Tenant, { foreignKey: 'tenantId', as: 'Tenant' });
-Tenant.hasMany(SubscriptionPlan, { foreignKey: 'tenantId', as: 'SubscriptionPlans' });
+Tenant.hasMany(SubscriptionPlan, { foreignKey: 'tenantId' });
+SubscriptionPlan.belongsTo(Tenant, { foreignKey: 'tenantId' });
+
+
 
 module.exports = SubscriptionPlan;
 

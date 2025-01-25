@@ -1,4 +1,4 @@
-const Tenant = require('../models/tenant');
+const Tenant = require('../models/tenant')
 const SubscriptionPlan = require('../models/subscriptionPlan');
 
 
@@ -7,26 +7,31 @@ exports.getSubscriptionPlansByTenantId = async (req, res) => {
     const { tenantId } = req.params;
 
     const tenant = await Tenant.findOne({
-      where: { TenantId: tenantId },
+      where: { Id: tenantId },
       include: [{
         model: SubscriptionPlan,
-        attributes: ['Id', 'Name', 'Amount', 'Days', 'IsActive'],
+        attributes: ['Id', 'Name', 'Amount', 'Days', 'IsActive', 'Shortcode'],
+        // ensure that the association key is correctly set
+        required: true,
       }],
     });
-
+    
+    console.log("Tenant",tenant)
     if (!tenant) {
       return res.status(404).json({ message: 'Tenant not found.' });
     }
 
     const response = {
-      TenantId: tenant.TenantId,
+      tenantId: tenant.tenantId,
       Email: tenant.Email,
       Plan: tenant.SubscriptionPlans.map(plan => ({
+        tenantId:plan.tenantId,
         Id: plan.Id,
         Name: plan.Name,
         Amount: plan.Amount,
         Days: plan.Days,
         IsActive: plan.IsActive,
+        Shortcode: plan.Shortcode,
       })),
     };
 
@@ -37,17 +42,20 @@ exports.getSubscriptionPlansByTenantId = async (req, res) => {
   }
 };
 
+
 // Create a new subscription plan
 exports.createSubscriptionPlan = async (req, res) => {
     try {
-      const { Name, Amount, Days, TenantId, IsActive } = req.body;
+      const { Name, Amount, Days,tenantId, IsActive,Shortcode ,CreatedBy} = req.body;
   
       const newPlan = await SubscriptionPlan.create({
         Name,
+        Shortcode,
         Amount,
         Days,
-        TenantId,
+        tenantId,
         IsActive,
+        CreatedBy
       });
   
       res.status(201).json(newPlan);
@@ -61,10 +69,10 @@ exports.createSubscriptionPlan = async (req, res) => {
 exports.updateSubscriptionPlan = async (req, res) => {
     try {
       const { tenantId, planId } = req.params;
-      const { Name, Amount, Days, IsActive } = req.body;
+      const { Name, Amount, Days, IsActive ,Shortcode} = req.body;
   
       const plan = await SubscriptionPlan.findOne({
-        where: { TenantId: tenantId, id: planId },
+        where: { tenantId: tenantId, id: planId },
       });
   
       if (!plan) {
@@ -74,6 +82,7 @@ exports.updateSubscriptionPlan = async (req, res) => {
       plan.Name = Name || plan.Name;
       plan.Amount = Amount || plan.Amount;
       plan.Days = Days || plan.Days;
+      plan.Shortcode=Shortcode||plan.Shortcode,
       plan.IsActive = IsActive !== undefined ? IsActive : plan.IsActive;
   
       await plan.save();
@@ -91,7 +100,7 @@ exports.deleteSubscriptionPlan = async (req, res) => {
       const { tenantId, planId } = req.params;
   
       const plan = await SubscriptionPlan.findOne({
-        where: { TenantId: tenantId, id: planId },
+        where: { tenantId: tenantId, id: planId },
       });
   
       if (!plan) {

@@ -18,9 +18,9 @@ const router = express.Router();
  *       - name: tenantId
  *         in: path
  *         required: true
- *         description: Tenant ID to filter subscription plans.
+ *         description: Tenant ID to associate the new user.
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       200:
  *         description: A list of subscription plans.
@@ -30,7 +30,6 @@ const router = express.Router();
  *         description: Server error.
  */
 router.get('/:tenantId', getSubscriptionPlansByTenantId);
-
 /**
  * @swagger
  * /subscription-plans:
@@ -38,6 +37,13 @@ router.get('/:tenantId', getSubscriptionPlansByTenantId);
  *     tags:
  *       - SubscriptionPlan
  *     summary: Create a new subscription plan
+ *     parameters:
+ *       - name: tenantId
+ *         in: path
+ *         required: true
+ *         description: Tenant ID to associate the new user.
+ *         schema:
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -47,20 +53,66 @@ router.get('/:tenantId', getSubscriptionPlansByTenantId);
  *             properties:
  *               Name:
  *                 type: string
+ *                 description: Name of the subscription plan
+ *                 example: Basic Plan
  *               Amount:
  *                 type: integer
+ *                 description: Amount for the subscription plan
+ *                 example: 500
  *               Days:
  *                 type: integer
- *               TenantId:
- *                 type: integer
+ *                 description: Validity period of the subscription plan in days
+ *                 example: 30
+ *               tenantId:
+ *                 type: string
+ *                 description: Tenant ID associated with the subscription plan
+ *                 example: T001
  *               IsActive:
  *                 type: boolean
+ *                 description: Whether the subscription plan is active
+ *                 example: true
+ *               Shortcode:
+ *                 type: string
+ *                 description: Shortcode for the subscription plan
+ *                 example: BASIC
+ *               CreatedBy:
+ *                 type: integer
+ *                 description: Shortcode for the subscription plan
+ *                 example: 1
  *     responses:
  *       201:
  *         description: Subscription plan created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Subscription plan created successfully.
+ *                 plan:
+ *                   type: object
+ *                   properties:
+ *                     Id:
+ *                       type: integer
+ *                     Name:
+ *                       type: string
+ *                     Amount:
+ *                       type: integer
+ *                     Days:
+ *                       type: integer
+ *                     tenantId:
+ *                       type: string
+ *                     IsActive:
+ *                       type: boolean
+ *                     Shortcode:
+ *                       type: string
+ *                     CreatedBy:
+ *                       type: string
  *       500:
  *         description: Server error.
  */
+
 router.post('/', createSubscriptionPlan);
 
 /**
@@ -94,6 +146,12 @@ router.post('/', createSubscriptionPlan);
  *                 type: integer
  *               IsActive:
  *                 type: boolean
+ *               Shortcode:
+ *                 type: string
+ *               CreatedBy:
+ *                 type: integer
+ *                 description: Shortcode for the subscription plan
+ *                 example: 1
  *     responses:
  *       200:
  *         description: Subscription plan updated successfully.

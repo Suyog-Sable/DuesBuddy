@@ -52,6 +52,8 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerJSDoc = require("swagger-jsdoc");
 
 const userRoutes = require("./routes/userRoutes");
+const subscriptionPlanRoutes=require("./routes/subscriptionPlanRoutes")
+const userSubscriptionPlanMappingRoutes=require("./routes/UserSubscriptionPlanMappingRoutes")
 const sequelize = require("./config/db");
 
 const app = express();
@@ -75,7 +77,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Routes
 app.use("/users", userRoutes);
-
+app.use("/subscription-plans",subscriptionPlanRoutes)
+app.use("/user-subscription-plan-mappings",userSubscriptionPlanMappingRoutes)
 // Start server
 const PORT = process.env.PORT || 3001;
 

@@ -43,7 +43,7 @@ const router = express.Router();
  *                     type: string
  *                   MobileNo:
  *                     type: string
- *                   Email:
+ *                   EmailId:
  *                     type: string
  *                   Gender:
  *                     type: string
@@ -100,8 +100,8 @@ router.get('/:tenantId', getUsersByTenantId);
  *         required: true
  *         description: Tenant ID to filter users.
  *         schema:
- *           type: integer
- *       - name: Id
+ *           type: string
+ *       - name: userId
  *         in: path
  *         required: true
  *         description: User ID to retrieve the specific user.
@@ -125,7 +125,7 @@ router.get('/:tenantId', getUsersByTenantId);
  *                   type: string
  *                 MobileNo:
  *                   type: string
- *                 Email:
+ *                 EmailId:
  *                   type: string
  *                 Gender:
  *                   type: string
@@ -161,7 +161,7 @@ router.get('/:tenantId', getUsersByTenantId);
  *                 Extra3:
  *                   type: string
  *                 TenantId:
- *                   type: integer
+ *                   type: string
  *       404:
  *         description: User not found.
  *       500:
@@ -200,7 +200,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *               MobileNo:
  *                 type: string
  *                 example: "+1234567890"
- *               Email:
+ *               EmailId:
  *                 type: string
  *                 example: john.doe@example.com
  *               Gender:
@@ -216,8 +216,8 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *               ProfileImagePath:
  *                 type: string
  *               DOB:
- *                 type: dateonly
- *                 format: date
+ *                 type: string
+ *                 format: date-time
  *               IsTrainer:
  *                 type: boolean
  *                 default: false
@@ -255,7 +255,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *                       type: string
  *                     MobileNo:
  *                       type: string
- *                     Email:
+ *                     EmailId:
  *                       type: string
  *                     Gender:
  *                       type: string
@@ -270,14 +270,14 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *                     ProfileImagePath:
  *                       type: string
  *                     DOB:
- *                       type: dateonly
- *                       format: date
+ *                       type: string
+ *                       format: date-time
  *                     IsTrainer:
  *                       type: boolean
  *                     CreatedBy:
  *                       type: integer
  *                     CreatedDate:
- *                       type: date
+ *                       type: string
  *                       format: date-time
  *                     UpdatedBy:
  *                       type: integer
@@ -336,7 +336,7 @@ router.post('/:tenantId', createUser);
  *                 type: string
  *               MobileNo:
  *                 type: string
- *               Email:
+ *               EmailId:
  *                 type: string
  *               Gender:
  *                 type: string
@@ -387,7 +387,7 @@ router.post('/:tenantId', createUser);
  *                       type: string
  *                     MobileNo:
  *                       type: string
- *                     Email:
+ *                     EmailId:
  *                       type: string
  *                     Gender:
  *                       type: string

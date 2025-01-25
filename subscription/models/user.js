@@ -20,7 +20,7 @@ const User = sequelize.define('User', {
   PresentAddress: { type: DataTypes.STRING, allowNull: true },
   Location: { type: DataTypes.STRING, allowNull: false },
   ProfileImagePath: { type: DataTypes.STRING, allowNull: true },
-  DOB: { type: DataTypes.DATEONLY, allowNull: false },
+  DOB: { type: DataTypes.DATE, allowNull: false },
   IsTrainer: { type: DataTypes.BOOLEAN, defaultValue: false },
   CreatedBy: { type: DataTypes.INTEGER, allowNull: false },
   CreatedDate: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
