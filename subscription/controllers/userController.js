@@ -143,6 +143,7 @@ exports.createUser = async (req, res) => {
         .status(400)
         .json({ message: "Invalid DOB format. Use 'YYYY-MM-DD'." });
     }
+    const formattedDOB = parsedDOB.toISOString().slice(0, 19).replace('T', ' ');
 
     // Create a new user associated with the tenant
     const user = await User.create({
@@ -153,7 +154,7 @@ exports.createUser = async (req, res) => {
       MobileNo,
       EmailId,
       Gender,
-      DOB: parsedDOB,
+      DOB: new Date().toISOString().slice(0, 19).replace('T', ' '),
       IsTrainer,
       Location,
       CreatedBy,
@@ -170,33 +171,6 @@ exports.createUser = async (req, res) => {
   }
 };
 
-// exports.createUser = async (req, res) => {
-//   try {
-//     const { tenantId, DOB, ...rest } = req.body;
-
-//     // Validate DOB format
-//     const parsedDOB = moment(DOB, 'YYYY-MM-DD', true);
-//     if (!parsedDOB.isValid()) {
-//       return res.status(400).json({ message: "Invalid DOB format. Use 'YYYY-MM-DD'." });
-//     }
-
-//     const tenant = await Tenant.findOne({ where: { Id: tenantId } });
-//     if (!tenant) {
-//       return res.status(404).json({ message: 'Tenant not found.' });
-//     }
-
-//     const user = await User.create({
-//       ...rest,
-//       tenantId,
-//       DOB: parsedDOB.toDate(),
-//     });
-
-//     res.status(201).json({ message: 'User created successfully!', user });
-//   } catch (error) {
-//     console.error('Error creating user:', error);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
 
 // Update User by UserId and TenantId
 exports.updateUser = async (req, res) => {
