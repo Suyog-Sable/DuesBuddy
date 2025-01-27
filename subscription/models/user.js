@@ -5,7 +5,7 @@ const Tenant = require('./tenant'); // Import Tenant model
 // Define the User model
 const User = sequelize.define('User', {
   Id: {
-    type: DataTypes.NUMBER, // Changed to NUMBER to match the database numeric type
+    type: DataTypes.INTEGER, // Correct data type for ID
     primaryKey: true,
     autoIncrement: true,
   },
@@ -20,10 +20,10 @@ const User = sequelize.define('User', {
   PresentAddress: { type: DataTypes.STRING, allowNull: true },
   Location: { type: DataTypes.STRING, allowNull: false },
   ProfileImagePath: { type: DataTypes.STRING, allowNull: true },
-  DOB: { type: DataTypes.DATE, allowNull: false },
+  DOB: { type: DataTypes.DATEONLY, allowNull: false },
   IsTrainer: { type: DataTypes.BOOLEAN, defaultValue: false },
   CreatedBy: { type: DataTypes.INTEGER, allowNull: false },
-  CreatedDate: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+  CreatedDate: { type: DataTypes.DATEONLY, allowNull: false, defaultValue: DataTypes.NOW },
   UpdatedBy: { type: DataTypes.INTEGER, allowNull: true },
   UpdatedDate: { type: DataTypes.DATE, allowNull: true },
   Extra1: { type: DataTypes.STRING, allowNull: true },

@@ -1,8 +1,47 @@
 const User = require("../models/user");
 const Tenant = require("../models/tenant");
+const moment = require("moment");
 
 const upload = require("../middleware/upload"); // Import your multer upload configuration
-const { handleUserFolderAndImages } = require("../controllers/userController"); // Import your handleUserFolderAndImages function
+// const { handleUserFolderAndImages } = require("../controllers/userController"); 
+
+
+//uplods --> users --> specific user 
+const handleUserFolderAndImages = async (tempFolder, userId, files, req) => {
+  try {
+    const path = require("path");
+    const fs = require("fs");
+
+    // Create a directory for the user if it doesn't exist
+    const userFolder = path.join(__dirname, "..", "uploads", userId.toString());
+    if (!fs.existsSync(userFolder)) {
+      fs.mkdirSync(userFolder, { recursive: true });
+    }
+
+    // Handle file processing here (e.g., move files to the user folder)
+    if (files && files.length > 0) {
+      for (let file of files) {
+        const tempFilePath = path.join(tempFolder, file.filename);
+        const newFilePath = path.join(userFolder, file.originalname);
+
+        // Move the file from temp folder to user folder
+        fs.renameSync(tempFilePath, newFilePath);
+        
+        // You could save the file path to the database or associate it with the user here
+        if (file.fieldname === 'profileImage') {
+          // Update profile image path in the user model (if applicable)
+          await User.update({ ProfileImagePath: newFilePath }, { where: { Id: userId } });
+        } else if (file.fieldname === 'aadharImage') {
+          // Update Aadhar image path in the user model (if applicable)
+          await User.update({ AadharImagePath: newFilePath }, { where: { Id: userId } });
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error handling user folder and images:", error);
+    throw new Error("Failed to handle user images");
+  }
+};
 
 // Get Users by TenantId
 exports.getUsersByTenantId = async (req, res) => {
@@ -176,16 +215,17 @@ exports.getUserByIdAndTenant = async (req, res) => {
 
 exports.createUser = async (req, res) => {
   try {
+    // Process file upload
     upload(req, res, async (err) => {
       if (err) {
         console.error("File upload error:", err);
-        return res
-          .status(400)
-          .json({ message: "File upload failed.", error: err.message });
+        return res.status(400).json({ 
+          message: "File upload failed.", 
+          error: err.message 
+        });
       }
 
       const {
-        tenantId,
         Name,
         Wing,
         RoomNo,
@@ -200,23 +240,37 @@ exports.createUser = async (req, res) => {
         PresentAddress,
       } = req.body;
 
-      const tenant = await Tenant.findOne({ where: { Id: tenantId } });
+      // Extract tenantId from path parameters
+      const { tenantId } = req.params;
 
+      // Validate tenantId
+      if (!tenantId) {
+        return res.status(400).json({ 
+          message: "tenantId is required in the path parameter." 
+        });
+      }
+
+      console.log("Received tenantId:", tenantId);
+
+      // Check if tenant exists
+      const tenant = await Tenant.findOne({ where: { Id: tenantId } });
       if (!tenant) {
         return res.status(404).json({ message: "Tenant not found." });
       }
 
-      const parsedDOB = new Date(DOB);
-      if (!parsedDOB || isNaN(parsedDOB)) {
-        return res
-          .status(400)
-          .json({ message: "Invalid DOB format. Use 'YYYY-MM-DD'." });
-      }
-      const formattedDOB = parsedDOB
-        .toISOString()
-        .slice(0, 19)
-        .replace("T", " ");
+      // Validate and format DOB
 
+      let formattedDOB;
+      if (moment(DOB, "YYYY-MM-DD", true).isValid()) {
+        formattedDOB = moment(DOB, "YYYY-MM-DD").toDate(); // Convert to JavaScript Date object
+      } else {
+        return res.status(400).json({ 
+          message: "Invalid DOB format. Use 'YYYY-MM-DD'." 
+        });
+      }
+
+
+      // Create user
       const user = await User.create({
         tenantId,
         Name,
@@ -233,20 +287,32 @@ exports.createUser = async (req, res) => {
         PresentAddress,
       });
 
+      // Handle file upload if files exist
       if (req.files) {
         const tempFolder = req.tempFolder;
         const files = req.files;
-
         await handleUserFolderAndImages(tempFolder, user.Id, files, req);
       }
 
-      res.status(201).json({ message: "User created successfully!", user });
+      // Respond with success
+      res.status(201).json({ 
+        //Insted 
+        //id : user.id
+        //name: 
+        //mobile number:
+        message: "User created successfully!", 
+        user 
+      });
     });
   } catch (error) {
     console.error("Error creating user:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      message: "An error occurred while creating the user.", 
+      error: error.message 
+    });
   }
 };
+
 
 // Update User by UserId and TenantId
 exports.updateUser = async (req, res) => {
@@ -298,29 +364,30 @@ exports.updateUser = async (req, res) => {
 };
 
 // update user images
-exports.UpdateUserImages = async (
-  req,
-  userId,
-  profileImagePath,
-  aadharImagePath
-) => {
-  try {
-    const User = require("../models/user");
+//
+// exports.UpdateUserImages = async (
+//   req,
+//   userId,
+//   profileImagePath,
+//   aadharImagePath
+// ) => {
+//   try {
+//     const User = require("../models/user");
 
-    const user = await User.findByPk(userId);
-    if (!user) throw new Error("User not found");
+//     const user = await User.findByPk(userId);
+//     if (!user) throw new Error("User not found");
 
-    await user.update({
-      ProfileImagePath: profileImagePath || null,
-      AadharImagePath: aadharImagePath || null,
-    });
+//     await user.update({
+//       ProfileImagePath: profileImagePath || null,
+//       AadharImagePath: aadharImagePath || null,
+//     });
 
-    console.log("Images updated successfully");
-  } catch (error) {
-    console.error("Failed to update images:", error);
-    throw new Error(`Failed to update images: ${error.message}`);
-  }
-};
+//     console.log("Images updated successfully");
+//   } catch (error) {
+//     console.error("Failed to update images:", error);
+//     throw new Error(`Failed to update images: ${error.message}`);
+//   }
+// };
 
 // Delete User by UserId and TenantId
 exports.deleteUser = async (req, res) => {
