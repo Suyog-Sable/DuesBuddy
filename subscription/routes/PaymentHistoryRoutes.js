@@ -117,7 +117,7 @@ router.post("/", createPaymentHistory);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -133,6 +133,7 @@ router.post("/", createPaymentHistory);
  *                 type: string
  *               imagePath:
  *                 type: string
+ *                 format: binary
  *               PaymentDate:
  *                 type: string
  *                 format: date
