@@ -5,7 +5,7 @@ const Tenant = require('./tenant'); // Import Tenant model
 // Define the User model
 const User = sequelize.define('User', {
   Id: {
-    type: DataTypes.NUMBER,
+    type: DataTypes.NUMBER, // Changed to NUMBER to match the database numeric type
     primaryKey: true,
     autoIncrement: true,
   },
@@ -36,7 +36,12 @@ const User = sequelize.define('User', {
   timestamps: false, // Disable automatic timestamps
 });
 
-// Update this to match the database schema
+// Hooks for updating UpdatedDate automatically
+User.beforeUpdate((user, options) => {
+  user.UpdatedDate = new Date(); // Update UpdatedDate before saving
+});
+
+// Association with Tenant
 User.belongsTo(Tenant, { foreignKey: 'tenantId', targetKey: 'Id' }); // Now referencing Tenant's Id
 Tenant.hasMany(User, { foreignKey: 'tenantId', sourceKey: 'Id' }); // Using 'Id' as the source key
 
