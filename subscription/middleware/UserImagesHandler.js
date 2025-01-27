@@ -50,7 +50,9 @@ async function handleUserFolderAndImages(tempFolder, userId, files, req) {
     ? convertToUrl(path.join(userFolder, files.AadharImagePath[0].filename))
     : null;
 
-  await UpdateUserImages(req, userId, profileImagePath, aadharImagePath);
+  // await UpdateUserImages(req, userId, profileImagePath, aadharImagePath);
+  
+  //update query
 }
 
 module.exports = { handleUserFolderAndImages };
