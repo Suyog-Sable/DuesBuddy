@@ -1,11 +1,11 @@
-const express = require('express');
+const express = require("express");
 const {
   getUsersByTenantId,
   getUserByIdAndTenant,
   createUser,
   updateUser,
   deleteUser,
-} = require('../controllers/userController');
+} = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -85,7 +85,7 @@ const router = express.Router();
  *       500:
  *         description: Server error.
  */
-router.get('/:tenantId', getUsersByTenantId);
+router.get("/:tenantId", getUsersByTenantId);
 
 /**
  * @swagger
@@ -167,13 +167,13 @@ router.get('/:tenantId', getUsersByTenantId);
  *       500:
  *         description: Server error.
  */
-router.get('/:tenantId/:userId', getUserByIdAndTenant);
+router.get("/:tenantId/:userId", getUserByIdAndTenant);
 
 /**
  * @swagger
  * /users/{tenantId}:
  *   post:
- *     summary: Create a new user for a specific tenant
+ *     summary: Create a new user for a specific tenant.
  *     tags:
  *       - Users
  *     parameters:
@@ -186,7 +186,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -207,6 +207,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *                 type: string
  *               AadharImagePath:
  *                 type: string
+ *                 format: binary
  *               PermanentAddress:
  *                 type: string
  *               PresentAddress:
@@ -215,6 +216,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *                 type: string
  *               ProfileImagePath:
  *                 type: string
+ *                 format: binary
  *               DOB:
  *                 type: string
  *                 format: date-time
@@ -229,8 +231,6 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *                 type: string
  *               Extra3:
  *                 type: string
- *               tenantId:
- *                 type: string
  *     responses:
  *       201:
  *         description: User created successfully.
@@ -242,7 +242,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *                 message:
  *                   type: string
  *                   example: User created successfully.
- *                 newUser:
+ *                 user:
  *                   type: object
  *                   properties:
  *                     Id:
@@ -282,7 +282,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *                     UpdatedBy:
  *                       type: integer
  *                     UpdatedDate:
- *                       type: date
+ *                       type: string
  *                       format: date-time
  *                     Extra1:
  *                       type: string
@@ -299,7 +299,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *       500:
  *         description: Server error.
  */
-router.post('/:tenantId', createUser);
+router.post("/:tenantId", createUser);
 
 /**
  * @swagger
@@ -429,7 +429,7 @@ router.post('/:tenantId', createUser);
  *       500:
  *         description: Server error.
  */
-router.put('/:tenantId/:userId', updateUser);
+router.put("/:tenantId/:userId", updateUser);
 
 /**
  * @swagger
@@ -467,7 +467,7 @@ router.put('/:tenantId/:userId', updateUser);
  *       500:
  *         description: Server error.
  */
-router.delete('/:tenantId/:userId', deleteUser);
+router.delete("/:tenantId/:userId", deleteUser);
 
 module.exports = router;
 

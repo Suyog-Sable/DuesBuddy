@@ -1,6 +1,9 @@
 const User = require("../models/user");
 const Tenant = require("../models/tenant");
 
+const upload = require("../middleware/upload"); // Import your multer upload configuration
+const { handleUserFolderAndImages } = require("../controllers/userController"); // Import your handleUserFolderAndImages function
+
 // Get Users by TenantId
 exports.getUsersByTenantId = async (req, res) => {
   try {
@@ -105,72 +108,145 @@ exports.getUserByIdAndTenant = async (req, res) => {
 
 // Create a new User for a specific TenantId
 // Create User
+// exports.createUser = async (req, res) => {
+//   try {
+//     const {
+//       tenantId,
+//       Name,
+//       Wing,
+//       RoomNo,
+//       MobileNo,
+//       EmailId,
+//       Gender,
+//       DOB,
+//       IsTrainer,
+//       Location,
+//       CreatedBy,
+//       PermanentAddress,
+//       PresentAddress,
+//       AadharImagePath,
+//       ProfileImagePath,
+//     } = req.body;
+
+//     console.log("Looking for tenantId:", tenantId);
+
+//     const tenant = await Tenant.findOne({
+//       where: { Id: tenantId },
+//     });
+
+//     if (!tenant) {
+//       console.log("Tenant not found with Id:", tenantId);
+//       return res.status(404).json({ message: "Tenant not found." });
+//     }
+
+//     // Validate DOB
+//     const parsedDOB = new Date(DOB);
+//     if (!parsedDOB) {
+//       return res
+//         .status(400)
+//         .json({ message: "Invalid DOB format. Use 'YYYY-MM-DD'." });
+//     }
+//     const formattedDOB = parsedDOB.toISOString().slice(0, 19).replace("T", " ");
+
+//     // Create a new user associated with the tenant
+//     const user = await User.create({
+//       tenantId,
+//       Name,
+//       Wing,
+//       RoomNo,
+//       MobileNo,
+//       EmailId,
+//       Gender,
+//       DOB: new Date().toISOString().slice(0, 19).replace("T", " "),
+//       IsTrainer,
+//       Location,
+//       CreatedBy,
+//       PermanentAddress,
+//       PresentAddress,
+//       AadharImagePath,
+//       ProfileImagePath,
+//     });
+
+//     res.status(201).json({ message: "User created successfully!", user });
+//   } catch (error) {
+//     console.error("Error creating user:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 exports.createUser = async (req, res) => {
   try {
-    const {
-      tenantId,
-      Name,
-      Wing,
-      RoomNo,
-      MobileNo,
-      EmailId,
-      Gender,
-      DOB,
-      IsTrainer,
-      Location,
-      CreatedBy,
-      PermanentAddress,
-      PresentAddress,
-      AadharImagePath,
-      ProfileImagePath,
-    } = req.body;
+    upload(req, res, async (err) => {
+      if (err) {
+        console.error("File upload error:", err);
+        return res
+          .status(400)
+          .json({ message: "File upload failed.", error: err.message });
+      }
 
-    console.log("Looking for tenantId:", tenantId);
+      const {
+        tenantId,
+        Name,
+        Wing,
+        RoomNo,
+        MobileNo,
+        EmailId,
+        Gender,
+        DOB,
+        IsTrainer,
+        Location,
+        CreatedBy,
+        PermanentAddress,
+        PresentAddress,
+      } = req.body;
 
-    const tenant = await Tenant.findOne({
-      where: { Id: tenantId },
+      const tenant = await Tenant.findOne({ where: { Id: tenantId } });
+
+      if (!tenant) {
+        return res.status(404).json({ message: "Tenant not found." });
+      }
+
+      const parsedDOB = new Date(DOB);
+      if (!parsedDOB || isNaN(parsedDOB)) {
+        return res
+          .status(400)
+          .json({ message: "Invalid DOB format. Use 'YYYY-MM-DD'." });
+      }
+      const formattedDOB = parsedDOB
+        .toISOString()
+        .slice(0, 19)
+        .replace("T", " ");
+
+      const user = await User.create({
+        tenantId,
+        Name,
+        Wing,
+        RoomNo,
+        MobileNo,
+        EmailId,
+        Gender,
+        DOB: formattedDOB,
+        IsTrainer,
+        Location,
+        CreatedBy,
+        PermanentAddress,
+        PresentAddress,
+      });
+
+      if (req.files) {
+        const tempFolder = req.tempFolder;
+        const files = req.files;
+
+        await handleUserFolderAndImages(tempFolder, user.Id, files, req);
+      }
+
+      res.status(201).json({ message: "User created successfully!", user });
     });
-
-    if (!tenant) {
-      console.log("Tenant not found with Id:", tenantId);
-      return res.status(404).json({ message: "Tenant not found." });
-    }
-
-    // Validate DOB
-    const parsedDOB = new Date(DOB);
-    if (!parsedDOB) {
-      return res
-        .status(400)
-        .json({ message: "Invalid DOB format. Use 'YYYY-MM-DD'." });
-    }
-    const formattedDOB = parsedDOB.toISOString().slice(0, 19).replace('T', ' ');
-
-    // Create a new user associated with the tenant
-    const user = await User.create({
-      tenantId,
-      Name,
-      Wing,
-      RoomNo,
-      MobileNo,
-      EmailId,
-      Gender,
-      DOB: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      IsTrainer,
-      Location,
-      CreatedBy,
-      PermanentAddress,
-      PresentAddress,
-      AadharImagePath,
-      ProfileImagePath,
-    });
-
-    res.status(201).json({ message: "User created successfully!", user });
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // Update User by UserId and TenantId
 exports.updateUser = async (req, res) => {
@@ -218,6 +294,31 @@ exports.updateUser = async (req, res) => {
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+// update user images
+exports.UpdateUserImages = async (
+  req,
+  userId,
+  profileImagePath,
+  aadharImagePath
+) => {
+  try {
+    const User = require("../models/user");
+
+    const user = await User.findByPk(userId);
+    if (!user) throw new Error("User not found");
+
+    await user.update({
+      ProfileImagePath: profileImagePath || null,
+      AadharImagePath: aadharImagePath || null,
+    });
+
+    console.log("Images updated successfully");
+  } catch (error) {
+    console.error("Failed to update images:", error);
+    throw new Error(`Failed to update images: ${error.message}`);
   }
 };
 
