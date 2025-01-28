@@ -515,7 +515,7 @@ router.get("/formatted/:tenantId", getFormattedUsersByTenantId);
  *   get:
  *     summary: Get active subscription plan for a user
  *     tags:
- *       - Users
+ *       - UserDetails
  *     parameters:
  *       - name: tenantId
  *         in: path
