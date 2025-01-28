@@ -5,6 +5,7 @@ const {
   createUser,
   updateUser,
   deleteUser,
+  getFormattedUsersByTenantId,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -89,7 +90,7 @@ router.get("/:tenantId", getUsersByTenantId);
 
 /**
  * @swagger
- * /users/{tenantId}/{userId}:
+ * /users/single/{tenantId}/{userId}:
  *   get:
  *     summary: Get a specific user by tenant ID and user ID
  *     tags:
@@ -167,7 +168,7 @@ router.get("/:tenantId", getUsersByTenantId);
  *       500:
  *         description: Server error.
  */
-router.get("/:tenantId/:userId", getUserByIdAndTenant);
+router.get("/single/:tenantId/:userId", getUserByIdAndTenant);
 
 /**
  * @swagger
@@ -468,5 +469,41 @@ router.put("/:tenantId/:userId", updateUser);
  *         description: Server error.
  */
 router.delete("/:tenantId/:userId", deleteUser);
+
+/**
+ * @swagger
+ * /users/formatted/{tenantId}:
+ *   get:
+ *     summary: Get formatted users by tenant ID
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - name: tenantId
+ *         in: path
+ *         required: true
+ *         description: Tenant ID to filter users.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: A list of formatted users.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   formattedName:
+ *                     type: string
+ *                     example: "John Doe | 1234567890"
+ *       404:
+ *         description: No users found.
+ *       500:
+ *         description: Server error.
+ */
+router.get("/formatted/:tenantId", getFormattedUsersByTenantId);
 
 module.exports = router;

@@ -214,7 +214,6 @@ exports.getUserByIdAndTenant = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // Create a new User for a specific TenantId
 exports.createUser = async (req, res) => {
   try {
@@ -388,6 +387,38 @@ exports.deleteUser = async (req, res) => {
     res.status(200).json({ message: "User deleted successfully." });
   } catch (error) {
     console.error("Error deleting user:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get formatted users by tenant ID
+exports.getFormattedUsersByTenantId = async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+
+    // Fetch users for the given tenant
+    const tenant = await Tenant.findOne({
+      where: { Id: tenantId },
+      include: [
+        {
+          model: User,
+          required: true,
+        },
+      ],
+    });
+
+    if (!tenant) {
+      return res.status(404).json({ message: "Tenant not found." });
+    }
+
+    const response = tenant.Users.map((user) => ({
+      Id: user.Id,
+      Name: ` ${user.Name} | ${user.MobileNo}`,
+    }));
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error fetching formatted users:", error);
     res.status(500).json({ error: error.message });
   }
 };
