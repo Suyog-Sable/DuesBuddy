@@ -3,7 +3,8 @@ const path = require("path"); // Import path module for handling file paths
 const User = require("../models/user");
 const Tenant = require("../models/tenant");
 const moment = require("moment");
-
+const UserSubscriptionPlanMapping = require("../models/UserSubscriptionPlanMapping");
+const SubscriptionPlan = require("../models/subscriptionPlan");
 const upload = require("../middleware/upload"); // Import your multer upload configuration
 // Suyog
 // Handle user folder and image uploads
@@ -420,5 +421,52 @@ exports.getFormattedUsersByTenantId = async (req, res) => {
   } catch (error) {
     console.error("Error fetching formatted users:", error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+// get Active plans for users
+
+exports.getUserSubscriptionPlanDetails = async (req, res) => {
+  const { userId, tenantId } = req.params;
+
+  try {
+    // Check if the user has any subscriptions
+    const userSubscriptions = await UserSubscriptionPlanMapping.findAll({
+      where: {
+        UserId: userId,
+        TenantId: tenantId,
+      },
+    });
+
+    if (!userSubscriptions || userSubscriptions.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No subscriptions found for the user." });
+    }
+
+    // Fetch the subscription plan details for all subscriptions
+    const subscriptionPlans = await Promise.all(
+      userSubscriptions.map(async (userSubscription) => {
+        const subscriptionPlan = await SubscriptionPlan.findOne({
+          where: {
+            Id: userSubscription.SubscriptionPlanId,
+          },
+        });
+
+        return subscriptionPlan;
+      })
+    );
+
+    // Filter out null values in case no plan was found for some subscriptions
+    const validSubscriptionPlans = subscriptionPlans.filter(Boolean);
+
+    if (validSubscriptionPlans.length === 0) {
+      return res.status(404).json({ message: "Subscription plans not found." });
+    }
+
+    return res.status(200).json(validSubscriptionPlans);
+  } catch (error) {
+    console.error("Error fetching subscription plan details:", error);
+    return res.status(500).json({ message: "Internal server error.", error });
   }
 };

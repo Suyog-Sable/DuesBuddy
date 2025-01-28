@@ -6,6 +6,7 @@ const {
   updateUser,
   deleteUser,
   getFormattedUsersByTenantId,
+  getUserSubscriptionPlanDetails,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -505,5 +506,51 @@ router.delete("/:tenantId/:userId", deleteUser);
  *         description: Server error.
  */
 router.get("/formatted/:tenantId", getFormattedUsersByTenantId);
+
+// Active Plans for user
+
+/**
+ * @swagger
+ * /users/active-plan/{tenantId}/{userId}:
+ *   get:
+ *     summary: Get active subscription plan for a user
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - name: tenantId
+ *         in: path
+ *         required: true
+ *         description: Tenant ID to fetch user details.
+ *         schema:
+ *           type: string
+ *       - name: userId
+ *         in: path
+ *         required: true
+ *         description: User ID to fetch active subscription plan.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Active subscription plan details for the user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 subscriptionPlanId:
+ *                   type: string
+ *                   description: Subscription plan ID.
+ *                 planName:
+ *                   type: string
+ *                   description: Name of the subscription plan.
+ *                 status:
+ *                   type: string
+ *                   description: Active status of the subscription.
+ *       404:
+ *         description: User or subscription plan not found.
+ *       500:
+ *         description: Server error.
+ */
+router.get("/active-plan/:tenantId/:userId", getUserSubscriptionPlanDetails);
 
 module.exports = router;
