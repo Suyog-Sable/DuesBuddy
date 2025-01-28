@@ -7,6 +7,8 @@ const userRoutes = require("./routes/userRoutes");
 const subscriptionPlanRoutes = require("./routes/subscriptionPlanRoutes");
 const userSubscriptionPlanMappingRoutes = require("./routes/UserSubscriptionPlanMappingRoutes");
 const paymentHistoryRoutes = require("./routes/PaymentHistoryRoutes");
+const systemUserRoutes = require("./routes/SystemUserRoutes");
+const attendanceRoutes = require("./routes/AttendanceRoutes");
 const sequelize = require("./config/db");
 
 const app = express();
@@ -32,6 +34,8 @@ app.use("/users", userRoutes);
 app.use("/subscription-plans", subscriptionPlanRoutes);
 app.use("/user-subscription-plan-mappings", userSubscriptionPlanMappingRoutes);
 app.use("/payment-history", paymentHistoryRoutes);
+app.use("/system-users", systemUserRoutes);
+app.use("/attendance", attendanceRoutes);
 // Start server
 const PORT = process.env.PORT || 3001;
 

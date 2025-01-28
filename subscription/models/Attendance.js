@@ -11,6 +11,14 @@ const Attendance = sequelize.define(
       autoIncrement: true,
       allowNull: false,
     },
+    tenantId: {
+      type: DataTypes.STRING(10), // Matches tenantId in SQL schema
+      allowNull: false,
+      references: {
+        model: "Tenant", // Ensure this matches the tenant table's name
+        key: "Id",
+      },
+    },
     UserId: {
       type: DataTypes.DECIMAL(18, 0),
       allowNull: false,
