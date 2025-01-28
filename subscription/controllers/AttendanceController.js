@@ -1,7 +1,51 @@
 const Attendance = require("../models/Attendance");
 const { Sequelize } = require("sequelize");
+const moment = require("moment");
 
 // Get all attendances
+// exports.getAllAttendances = async (req, res) => {
+//   try {
+//     const attendances = await Attendance.findAll({
+//       attributes: [
+//         "Id",
+//         "UserId",
+//         "CheckIn",
+//         "CheckOut",
+//         "CheckInBy",
+//         "CheckInDate",
+//         "CheckOutBy",
+//         "CheckOutDate",
+//       ],
+//     });
+
+//     if (!attendances || attendances.length === 0) {
+//       return res.status(404).json({ message: "No attendance records found." });
+//     }
+
+//     // Format response
+//     const formattedAttendances = attendances.map((attendance) => {
+//       return {
+//         Id: attendance.Id,
+//         UserId: attendance.UserId,
+//         UserName: attendance.User?.FullName || null,
+//         CheckIn: attendance.CheckIn,
+//         CheckOut: attendance.CheckOut,
+//         CheckInBy: attendance.CheckInBy,
+//         CheckInByName: attendance.CheckInByUser?.FullName || null,
+//         CheckInDate: attendance.CheckInDate,
+//         CheckOutBy: attendance.CheckOutBy,
+//         CheckOutByName: attendance.CheckOutByUser?.FullName || null,
+//         CheckOutDate: attendance.CheckOutDate,
+//       };
+//     });
+
+//     res.status(200).json(formattedAttendances);
+//   } catch (error) {
+//     console.error("Error fetching attendance records:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 exports.getAllAttendances = async (req, res) => {
   try {
     const attendances = await Attendance.findAll({
@@ -21,31 +65,26 @@ exports.getAllAttendances = async (req, res) => {
       return res.status(404).json({ message: "No attendance records found." });
     }
 
-    // Format response
+    // Format response and convert time to the desired timezone
     const formattedAttendances = attendances.map((attendance) => {
-      const formatDateTime = (dateTime) =>
-        dateTime
-          ? new Date(dateTime).toLocaleString("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : null;
-
       return {
         Id: attendance.Id,
         UserId: attendance.UserId,
         UserName: attendance.User?.FullName || null,
-        CheckIn: formatDateTime(attendance.CheckIn),
-        CheckOut: formatDateTime(attendance.CheckOut),
+        CheckIn: moment.utc(attendance.CheckIn).format("DD MMM YYYY HH:mm:ss"), // Local time conversion
+        CheckOut: attendance.CheckOut
+          ? moment.utc(attendance.CheckOut).format("DD MMM YYYY HH:mm:ss")
+          : null,
         CheckInBy: attendance.CheckInBy,
         CheckInByName: attendance.CheckInByUser?.FullName || null,
-        CheckInDate: formatDateTime(attendance.CheckInDate),
+        CheckInDate: moment
+          .utc(attendance.CheckInDate)
+          .format("DD MMM YYYY HH:mm:ss"),
         CheckOutBy: attendance.CheckOutBy,
         CheckOutByName: attendance.CheckOutByUser?.FullName || null,
-        CheckOutDate: formatDateTime(attendance.CheckOutDate),
+        CheckOutDate: attendance.CheckOutDate
+          ? moment.utc(attendance.CheckOutDate).format("DD MMM YYYY HH:mm:ss")
+          : null,
       };
     });
 
@@ -102,78 +141,71 @@ exports.getAllAttendances = async (req, res) => {
 //   }
 // };
 
-const { Op, fn, col } = require("sequelize");
-
 exports.addAttendance = async (req, res) => {
   const { UserId, tenantId, CheckInBy, CheckOutBy } = req.body;
 
-  if (!UserId) {
-    return res.status(400).json({ error: "UserId is required." });
-  }
-
   try {
-    // Get today's date and format it as yyyy-MM-dd HH:mm:ss
-    const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    // Validate input
+    if (!UserId || (!CheckInBy && !CheckOutBy)) {
+      return res.status(400).json({
+        error: "UserId and either CheckInBy or CheckOutBy are required",
+      });
+    }
 
-    // Logging the date values for debugging
-    console.log("Start of Day:", startOfDay.toISOString());
-    console.log("End of Day:", endOfDay.toISOString());
+    // Get today's date for comparison
+    const today = moment.utc().startOf("day").toDate();
 
-    // Use Sequelize's fn for date comparison to handle the conversion automatically
+    // Check if the user has already checked in today
     const existingAttendance = await Attendance.findOne({
       where: {
         UserId,
         tenantId,
-        CheckInDate: {
-          [Op.between]: [
-            fn("CONVERT", fn("datetime", startOfDay), "datetime"),
-            fn("CONVERT", fn("datetime", endOfDay), "datetime"),
-          ], // Converting dates into datetime format using Sequelize fn
+        CheckIn: {
+          [Sequelize.Op.gte]: today, // Ensure the check-in time is today or later
         },
       },
     });
 
-    if (existingAttendance) {
-      return res
-        .status(400)
-        .json({ error: "User has already checked in or checked out today." });
+    // If CheckOutBy is provided and the user has already checked in, update the CheckOut details
+    if (existingAttendance && CheckOutBy) {
+      if (existingAttendance.CheckOut) {
+        return res
+          .status(400)
+          .json({ message: "You have already checked out today." });
+      }
+      // Update CheckOut details
+      await existingAttendance.update({
+        CheckOut: Sequelize.fn("GETDATE"),
+        CheckOutBy,
+        CheckOutDate: Sequelize.fn("GETDATE"),
+      });
+      return res.status(200).json({
+        message: "CheckOut updated successfully",
+        attendance: existingAttendance,
+      });
     }
 
-    // Initialize CheckIn and CheckInDate with current date and time if CheckInBy is provided
-    let finalCheckIn = null;
-    let finalCheckInDate = null;
-    let finalCheckOut = null;
-    let finalCheckOutDate = null;
-
-    if (CheckInBy) {
-      finalCheckIn = new Date(); // Set current date/time if CheckInBy is provided
-      finalCheckInDate = new Date(); // Set current date if CheckInBy is provided
+    // If no existing CheckIn, create a new CheckIn record
+    if (!existingAttendance && CheckInBy) {
+      const newAttendance = await Attendance.create({
+        UserId,
+        tenantId,
+        CheckIn: Sequelize.fn("GETDATE"),
+        CheckInBy,
+        CheckInDate: Sequelize.fn("GETDATE"),
+      });
+      return res.status(201).json({
+        message: "CheckIn added successfully",
+        attendance: newAttendance,
+      });
     }
-    if (CheckOutBy) {
-      finalCheckOut = new Date(); // Set current date/time if CheckOutBy is provided
-      finalCheckOutDate = new Date(); // Set current date if CheckOutBy is provided
-    }
 
-    // Add attendance record
-    const newAttendance = await Attendance.create({
-      UserId,
-      tenantId,
-      CheckIn: finalCheckIn || null,
-      CheckOut: finalCheckOut || null, // Assuming CheckOut is optional and can be null initially
-      CheckInBy,
-      CheckInDate: finalCheckInDate,
-      CheckOutBy, // Assuming CheckOutBy is optional and can be null initially
-      CheckOutDate: finalCheckOutDate || null, // Assuming CheckOutDate is optional and can be null initially
-    });
-
-    res.status(201).json({
-      message: "Attendance record created successfully.",
-      attendance: newAttendance,
+    // If neither condition is met, return an error
+    return res.status(400).json({
+      message: "Already Checked In.",
     });
   } catch (error) {
-    console.error("Error adding attendance:", error);
-    res.status(500).json({ error: error.message });
+    console.error("Error adding/updating attendance:", error);
+    return res.status(500).json({ error: "Error adding/updating attendance" });
   }
 };

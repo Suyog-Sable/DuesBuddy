@@ -1,42 +1,117 @@
-const fs = require('fs'); // Import fs module for file system operations
-const path = require('path'); // Import path module for handling file paths
+const fs = require("fs"); // Import fs module for file system operations
+const path = require("path"); // Import path module for handling file paths
 const User = require("../models/user");
 const Tenant = require("../models/tenant");
 const moment = require("moment");
 
 const upload = require("../middleware/upload"); // Import your multer upload configuration
-
+// Suyog
 // Handle user folder and image uploads
-const handleUserFolderAndImages = async (userId, files) => {
-  try {
-    const userFolder = path.join(__dirname, "..", "uploads", "users", userId.toString());
 
-    // Create folder if it doesn't exist
-    if (!fs.existsSync(userFolder)) {
+// const handleUserFolderAndImages = async (tempfolder, userId, files) => {
+//   try {
+//     const userFolder = path.join(
+//       __dirname,
+//       "..",
+//       "uploads",
+//       "users",
+//       userId.toString()
+//     );
+
+//     // Create folder if it doesn't exist
+//     if (!fs.existsSync(userFolder)) {
+//       fs.mkdirSync(userFolder, { recursive: true });
+//     }
+
+//     if (files && files.length > 0) {
+//       for (let file of files) {
+//         const fileName = `${userId}_${file.originalname}`;
+//         const newFilePath = path.join(userFolder, fileName);
+
+//         // Move file to user folder
+//         fs.renameSync(file.path, newFilePath);
+
+//         // Update database with file paths
+//         if (file.fieldname === "profileImage") {
+//           await User.update(
+//             { ProfileImagePath: newFilePath },
+//             { where: { Id: userId } }
+//           );
+//         } else if (file.fieldname === "aadharImage") {
+//           await User.update(
+//             { AadharImagePath: newFilePath },
+//             { where: { Id: userId } }
+//           );
+//         }
+//       }
+//     }
+//   } catch (error) {
+//     console.error("Error handling user images:", error);
+//     throw new Error("Failed to process user images.");
+//   }
+// };
+// Code---Harshali
+async function handleUserFolderAndImages(tempFolder, userId, files, req) {
+  const uploadsDir = path.normalize(process.env.UPLOADS_DIR + `/users`);
+  const uploadsUrl = `${process.env.UPLOADS_URL}/users`.replace(/\\/g, "/");
+  const userFolder = path.join(uploadsDir, String(userId));
+
+  // Ensure the user folder exists
+  if (!fs.existsSync(userFolder)) {
+    try {
       fs.mkdirSync(userFolder, { recursive: true });
+    } catch (err) {
+      console.error("Error creating user folder:", err);
+      return res.status(500).json({ error: "Error creating user folder." });
     }
-
-    if (files && files.length > 0) {
-      for (let file of files) {
-        const fileName = `${userId}_${file.originalname}`;
-        const newFilePath = path.join(userFolder, fileName);
-
-        // Move file to user folder
-        fs.renameSync(file.path, newFilePath);
-
-        // Update database with file paths
-        if (file.fieldname === "profileImage") {
-          await User.update({ ProfileImagePath: newFilePath }, { where: { Id: userId } });
-        } else if (file.fieldname === "aadharImage") {
-          await User.update({ AadharImagePath: newFilePath }, { where: { Id: userId } });
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Error handling user images:", error);
-    throw new Error("Failed to process user images.");
   }
-};
+
+  // Move files from tempFolder to userFolder
+  const moveFiles = (sourceDir, destDir) => {
+    if (!fs.existsSync(sourceDir)) {
+      throw new Error("Source directory does not exist.");
+    }
+    const files = fs.readdirSync(sourceDir);
+    files.forEach((file) => {
+      const sourceFile = path.join(sourceDir, file);
+      const destFile = path.join(destDir, file);
+      fs.renameSync(sourceFile, destFile);
+    });
+  };
+
+  // Move all files and delete the temp folder
+  moveFiles(tempFolder, userFolder);
+  fs.rmdirSync(tempFolder);
+
+  // Helper function to convert file path to URL
+  const convertToUrl = (filePath) => {
+    const normalizedFilePath = path.normalize(filePath);
+    const normalizedUploadsDir = path.normalize(uploadsDir);
+    return normalizedFilePath
+      .replace(normalizedUploadsDir, uploadsUrl)
+      .replace(/\\/g, "/");
+  };
+
+  // Prepare image paths with URL replacement
+  const profileImagePath = files?.ProfileImagePath
+    ? convertToUrl(path.join(userFolder, files.ProfileImagePath[0].filename))
+    : null;
+
+  const aadharImagePath = files?.AadharImagePath
+    ? convertToUrl(path.join(userFolder, files.AadharImagePath[0].filename))
+    : null;
+
+  // Update the User table
+  await User.update(
+    {
+      ProfileImagePath: profileImagePath,
+      AadharImagePath: aadharImagePath,
+    },
+    {
+      where: { Id: userId },
+    }
+  );
+}
 
 // Get Users by TenantId
 exports.getUsersByTenantId = async (req, res) => {
@@ -178,8 +253,6 @@ exports.createUser = async (req, res) => {
         });
       }
 
-      console.log("Received tenantId:", tenantId);
-
       // Check if tenant exists
       const tenant = await Tenant.findOne({ where: { Id: tenantId } });
       if (!tenant) {
@@ -188,11 +261,23 @@ exports.createUser = async (req, res) => {
 
       // Validate and format DOB
       let formattedDOB;
-      if (moment(DOB, "YYYY-MM-DD", true).isValid()) {
-        formattedDOB = moment(DOB, "YYYY-MM-DD").toDate(); // Convert to JavaScript Date object
+      // if (moment(DOB, "YYYY-MM-DD", true).isValid()) {
+      //   formattedDOB = moment(DOB, "YYYY-MM-DD").toDate(); // Convert to JavaScript Date object
+      // } else {
+      //   return res.status(400).json({
+      //     message: "Invalid DOB format. Use 'YYYY-MM-DD'.",
+      //   });
+      // }
+
+      if (moment(DOB, moment.ISO_8601, true).isValid()) {
+        // Parse ISO 8601 format
+        formattedDOB = moment(DOB).toDate(); // Convert to JavaScript Date object
+      } else if (moment(DOB, "YYYY-MM-DD", true).isValid()) {
+        // Parse strictly formatted YYYY-MM-DD
+        formattedDOB = moment(DOB, "YYYY-MM-DD").toDate();
       } else {
         return res.status(400).json({
-          message: "Invalid DOB format. Use 'YYYY-MM-DD'.",
+          message: "Invalid DOB format. Use 'YYYY-MM-DD' or ISO 8601.",
         });
       }
 
@@ -222,12 +307,9 @@ exports.createUser = async (req, res) => {
 
       // Respond with success
       res.status(201).json({
-        message: "User created successfully!",
-        userDetails: {
-          id: user.Id, // Return user id
-          name: user.Name, // Return user name
-          mobileNumber: user.MobileNo, // Return user mobile number
-        },
+        id: user.Id, // Return user id
+        name: user.Name, // Return user name
+        mobileNumber: user.MobileNo, // Return user mobile number
       });
     });
   } catch (error) {
@@ -279,7 +361,9 @@ exports.updateUser = async (req, res) => {
       Extra3: user.Extra3,
     };
 
-    res.status(200).json({ message: "User updated successfully", user: response });
+    res
+      .status(200)
+      .json({ message: "User updated successfully", user: response });
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).json({ error: error.message });

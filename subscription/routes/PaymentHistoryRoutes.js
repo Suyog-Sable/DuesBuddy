@@ -83,9 +83,8 @@ router.get("/:tenantId", getPaymentHistoryByTenantId);
  *                 example: /images/payments/txn12345.jpg
  *               PaymentDate:
  *                 type: string
- *                 format: date
+ *                 format: date-time
  *                 description: Date of payment.
- *                 example: 2025-01-01
  *               CreatedBy:
  *                 type: integer
  *                 description: ID of the user who created the record.

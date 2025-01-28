@@ -470,37 +470,3 @@ router.put("/:tenantId/:userId", updateUser);
 router.delete("/:tenantId/:userId", deleteUser);
 
 module.exports = router;
-
-// const express = require("express");
-// const { getUsersByTenantId } = require("../controllers/userController");
-// const validateTenant = require("../middleware/tenantMiddleware");
-
-// const router = express.Router();
-
-// /**
-//  * @swagger
-//  * /users:
-//  *   get:
-//  *     summary: Get users by tenant ID
-//  *     tags:
-//  *       - Users
-//  *     parameters:
-//  *       - in: header
-//  *         name: tenantid
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: Tenant ID for multi-tenancy
-//  *     responses:
-//  *       200:
-//  *         description: List of users
-//  *       404:
-//  *         description: No users found
-//  *       400:
-//  *         description: Missing tenantId header
-//  *       500:
-//  *         description: Internal server error
-//  */
-// router.get("/", validateTenant, getUsersByTenantId);
-
-// module.exports = router;

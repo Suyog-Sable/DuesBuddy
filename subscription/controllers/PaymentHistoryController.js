@@ -3,6 +3,7 @@ const PaymentHistory = require("../models/PaymentHistory");
 const path = require("path");
 const fs = require("fs");
 require("dotenv").config();
+const moment = require("moment");
 const upload = require("../middleware/upload");
 // Get payment history by tenant ID
 exports.getPaymentHistoryByTenantId = async (req, res) => {
@@ -48,7 +49,10 @@ exports.getPaymentHistoryByTenantId = async (req, res) => {
         AmountReceived: payment.AmountReceived,
         PaymentType: payment.PaymentType,
         imagePath: payment.imagePath,
-        PaymentDate: payment.PaymentDate,
+        PaymentDate: moment
+          .utc(payment.PaymentDate)
+          // .tz("Asia/Kolkata", true)
+          .format("DD MMM YYYY HH:mm:ss"),
         CreatedBy: payment.CreatedBy,
         CreatedDate: payment.CreatedDate,
         UpdatedBy: payment.UpdatedBy,
@@ -191,6 +195,136 @@ exports.getPaymentHistoryByTenantId = async (req, res) => {
 //   }
 // };
 
+// exports.createPaymentHistory = async (req, res) => {
+//   try {
+//     upload(req, res, async (err) => {
+//       if (err) {
+//         console.error("Error during file upload:", err);
+//         return res.status(400).json({ error: err.message });
+//       }
+
+//       const {
+//         UserId,
+//         tenantId,
+//         SubscriptionPlanId,
+//         TransactionRefId,
+//         AmountReceived,
+//         PaymentType,
+//         PaymentDate,
+//         CreatedBy,
+//       } = req.body;
+
+//       // Validate required fields
+//       const requiredFields = [
+//         "UserId",
+//         "SubscriptionPlanId",
+//         "TransactionRefId",
+//         "AmountReceived",
+//         "PaymentType",
+//         "PaymentDate",
+//       ];
+
+//       const missingFields = requiredFields.filter((field) => !req.body[field]);
+//       if (missingFields.length > 0) {
+//         return res.status(400).json({
+//           error: `Missing required fields: ${missingFields.join(", ")}`,
+//         });
+//       }
+//       // const paymentDate = moment(PaymentDate).format("YYYY-MM-DD HH:mm:ss");
+//       // //Validate and format PaymentDate
+//       // let paymentDateValue = null;
+//       // if (
+//       //   moment(PaymentDate, moment.ISO_8601, true).isValid() ||
+//       //   moment(PaymentDate, "YYYY-MM-DD HH:mm:ss", true).isValid()
+//       // ) {
+//       //   paymentDateValue = moment(PaymentDate).format("YYYY-MM-DD HH:mm:ss");
+//       // } else {
+//       //   return res.status(400).json({
+//       //     error: "Invalid PaymentDate format. Use 'YYYY-MM-DD HH:mm:ss'.",
+//       //   });
+//       // }
+
+//       const paymentDate = moment
+//         .utc(PaymentDate)
+//         .format("DD MMM YYYY HH:mm:ss"); // moment(PaymentDate).format("YYYY-MM-DD");
+//       // const paymentDate = new Date("2025-01-28T09:21:22.000Z"); // Sample ISO string
+//       // const formattedPaymentDate = paymentDate
+//       //   .toISOString()
+//       //   .slice(0, 19)
+//       //   .replace("T", " "); // Format to 'YYYY-MM-DD HH:mm:ss'
+//       // console.log("Formatted Payment Date", formattedPaymentDate); // Output will be '2025-01-28 09:21:22'
+
+//       // Handle optional image upload for PaymentType "O"
+//       let paymentReceiptUrl = null;
+//       if (PaymentType === "O") {
+//         if (!req.files || !req.files.imagePath) {
+//           return res.status(400).json({
+//             error: "ImagePath is required when PaymentType is 'O'.",
+//           });
+//         }
+
+//         const uploadsDir = path.normalize(process.env.UPLOADS_DIR + `/users`);
+//         const uploadsUrl = `${process.env.UPLOADS_URL}/users`.replace(
+//           /\\/g,
+//           "/"
+//         );
+//         const userFolder = path.join(uploadsDir, String(UserId));
+
+//         // Ensure user folder exists
+//         if (!fs.existsSync(userFolder)) {
+//           fs.mkdirSync(userFolder, { recursive: true });
+//         }
+
+//         const tempFilePath = path.join(
+//           req.tempFolder,
+//           req.files.imagePath[0].filename
+//         );
+//         const paymentReceiptPath = path.join(
+//           userFolder,
+//           req.files.imagePath[0].filename
+//         );
+
+//         // Move the file and clean up temp folder
+//         await fs.promises.rename(tempFilePath, paymentReceiptPath);
+//         await fs.promises.rm(req.tempFolder, { recursive: true, force: true });
+
+//         // Construct file URL
+//         paymentReceiptUrl = `${uploadsUrl}/${UserId}/${req.files.imagePath[0].filename}`;
+//       }
+
+//       // Prepare data for database insertion
+//       const newPaymentData = {
+//         UserId,
+//         tenantId,
+//         SubscriptionPlanId,
+//         TransactionRefId,
+//         AmountReceived,
+//         PaymentType,
+//         PaymentDate: paymentDate,
+//         // new Date(PaymentDate).toLocaleDateString("en-GB", {
+//         //   day: "2-digit",
+//         //   month: "short",
+//         //   year: "numeric",
+//         //   hour: "2-digit",
+//         //   minute: "2-digit",
+//         //   second: "2-digit",
+//         // }),
+//         CreatedBy,
+//         CreatedDate: new Date(),
+//         UpdatedDate: new Date(),
+//         imagePath: paymentReceiptUrl,
+//       };
+
+//       // Create the payment record
+//       const newPayment = await PaymentHistory.create(newPaymentData);
+
+//       return res.status(201).json(newPayment);
+//     });
+//   } catch (error) {
+//     console.error("Error creating payment record:", error);
+//     return res.status(500).json({ error: error.message });
+//   }
+// };
 exports.createPaymentHistory = async (req, res) => {
   try {
     upload(req, res, async (err) => {
@@ -199,16 +333,16 @@ exports.createPaymentHistory = async (req, res) => {
         return res.status(400).json({ error: err.message });
       }
 
-      const paymentData = {
-        UserId: req.body.UserId,
-        tenantId: req.body.tenantId,
-        SubscriptionPlanId: req.body.SubscriptionPlanId,
-        TransactionRefId: req.body.TransactionRefId,
-        AmountReceived: req.body.AmountReceived,
-        PaymentType: req.body.PaymentType,
-        PaymentDate: req.body.PaymentDate, // Raw input for validation
-        CreatedBy: req.body.CreatedBy,
-      };
+      const {
+        UserId,
+        tenantId,
+        SubscriptionPlanId,
+        TransactionRefId,
+        AmountReceived,
+        PaymentType,
+        PaymentDate,
+        CreatedBy,
+      } = req.body;
 
       // Validate required fields
       const requiredFields = [
@@ -220,54 +354,35 @@ exports.createPaymentHistory = async (req, res) => {
         "PaymentDate",
       ];
 
-      const missingFields = requiredFields.filter(
-        (field) => !paymentData[field]
-      );
-
+      const missingFields = requiredFields.filter((field) => !req.body[field]);
       if (missingFields.length > 0) {
         return res.status(400).json({
           error: `Missing required fields: ${missingFields.join(", ")}`,
         });
       }
-
-      // Parse and validate PaymentDate
-      const paymentDateValue = new Date(paymentData.PaymentDate);
-      if (isNaN(paymentDateValue.getTime())) {
-        return res.status(400).json({
-          error:
-            "Invalid Payment Date format. Provide in ISO 8601 format (YYYY-MM-DDTHH:mm:ss).",
-        });
-      }
-
-      // File upload logic
+      console.log("Payment Date", PaymentDate);
+      // Store PaymentDate as UTC without conversion
+      const paymentDateUTC = moment(PaymentDate).format("YYYY-MM-DD HH:mm:ss");
+      console.log("converted date", paymentDateUTC);
+      // Handle optional image upload for PaymentType "O"
       let paymentReceiptUrl = null;
-
-      if (paymentData.PaymentType === "O") {
-        // Only proceed with file upload if PaymentType is "O"
+      if (PaymentType === "O") {
         if (!req.files || !req.files.imagePath) {
           return res.status(400).json({
             error: "ImagePath is required when PaymentType is 'O'.",
           });
         }
 
-        // Handle the file upload
         const uploadsDir = path.normalize(process.env.UPLOADS_DIR + `/users`);
-        const uploadsUrl = `${process.env.UPLOADS_URL}/users/`.replace(
+        const uploadsUrl = `${process.env.UPLOADS_URL}/users`.replace(
           /\\/g,
           "/"
         );
-        const userFolder = path.join(uploadsDir, String(req.body.UserId));
+        const userFolder = path.join(uploadsDir, String(UserId));
 
-        // Ensure the user folder exists
+        // Ensure user folder exists
         if (!fs.existsSync(userFolder)) {
-          try {
-            fs.mkdirSync(userFolder, { recursive: true });
-          } catch (err) {
-            console.error("Error creating user folder:", err);
-            return res
-              .status(500)
-              .json({ error: "Error creating user folder." });
-          }
+          fs.mkdirSync(userFolder, { recursive: true });
         }
 
         const tempFilePath = path.join(
@@ -279,48 +394,37 @@ exports.createPaymentHistory = async (req, res) => {
           req.files.imagePath[0].filename
         );
 
-        // Move the file from the temp folder to the user folder
+        // Move the file and clean up temp folder
         await fs.promises.rename(tempFilePath, paymentReceiptPath);
         await fs.promises.rm(req.tempFolder, { recursive: true, force: true });
 
-        // Construct the file URL to store in DB
-        paymentReceiptUrl = `${uploadsUrl}/users/${req.body.UserId}/${req.files.imagePath[0].filename}`;
+        // Construct file URL
+        paymentReceiptUrl = `${uploadsUrl}/${UserId}/${req.files.imagePath[0].filename}`;
       }
-
-      // Validate PaymentType and ImagePath for "O"
-      if (paymentData.PaymentType === "O" && !paymentReceiptUrl) {
-        return res.status(400).json({
-          error: "ImagePath is required when PaymentType is 'O'.",
-        });
-      }
-
-      // Add timestamps
-      const createdDate = new Date();
-      const updatedDate = new Date();
 
       // Prepare data for database insertion
-      const revisedData = {
-        UserId: paymentData.UserId,
-        tenantId: paymentData.tenantId,
-        SubscriptionPlanId: paymentData.SubscriptionPlanId,
-        TransactionRefId: paymentData.TransactionRefId,
-        AmountReceived: paymentData.AmountReceived,
-        PaymentType: paymentData.PaymentType,
-        PaymentDate: paymentDateValue, // Ensures date and time are stored
-        CreatedBy: paymentData.CreatedBy,
-        CreatedDate: createdDate,
-        UpdatedDate: updatedDate,
-        imagePath: paymentReceiptUrl, // Only included if "O"
+      const newPaymentData = {
+        UserId,
+        tenantId,
+        SubscriptionPlanId,
+        TransactionRefId,
+        AmountReceived,
+        PaymentType,
+        PaymentDate: paymentDateUTC, // Store UTC date in DB
+        CreatedBy,
+        CreatedDate: new Date(),
+        UpdatedDate: new Date(),
+        imagePath: paymentReceiptUrl,
       };
 
-      // Create the payment record in the database
-      const newPayment = await PaymentHistory.create(revisedData);
+      // Create the payment record
+      const newPayment = await PaymentHistory.create(newPaymentData);
 
-      res.status(201).json(newPayment);
+      return res.status(201).json(newPayment);
     });
   } catch (error) {
     console.error("Error creating payment record:", error);
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 

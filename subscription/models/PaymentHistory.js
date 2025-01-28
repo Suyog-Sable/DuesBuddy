@@ -37,7 +37,7 @@ const PaymentHistory = sequelize.define(
       allowNull: true,
     },
     PaymentDate: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATE,
       allowNull: false,
     },
     CreatedBy: {
