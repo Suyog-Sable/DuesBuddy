@@ -471,6 +471,8 @@ router.put("/:tenantId/:userId", updateUser);
  */
 router.delete("/:tenantId/:userId", deleteUser);
 
+// routes for formatted users
+
 /**
  * @swagger
  * /users/formatted/{tenantId}:
