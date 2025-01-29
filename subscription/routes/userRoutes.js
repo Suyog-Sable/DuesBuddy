@@ -316,7 +316,7 @@ router.post("/:tenantId", createUser);
  *         required: true
  *         description: Tenant ID to filter users.
  *         schema:
- *           type: integer
+ *           type: string
  *       - name: Id
  *         in: path
  *         required: true
@@ -446,7 +446,7 @@ router.put("/:tenantId/:userId", updateUser);
  *         required: true
  *         description: Tenant ID to identify the user.
  *         schema:
- *           type: integer
+ *           type: string
  *       - name: Id
  *         in: path
  *         required: true
