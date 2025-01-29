@@ -27,8 +27,24 @@ const swaggerOptions = {
   apis: ["./routes/*.js"],
 };
 
+const customSorter = (a, b) => {
+  const methodOrder = ["get", "post", "put", "delete"];
+  return (
+    methodOrder.indexOf(a.get("method")) - methodOrder.indexOf(b.get("method"))
+  );
+};
+
+const swaggerUiOptions = {
+  swaggerOptions: {
+    operationsSorter: customSorter, // Sort operations by HTTP method (GET, POST, etc.)
+  },
+};
 const swaggerDocs = swaggerJSDoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocs, swaggerUiOptions)
+);
 
 // Routes
 app.use("/users", userRoutes);

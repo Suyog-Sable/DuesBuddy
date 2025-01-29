@@ -49,6 +49,10 @@ exports.getPaymentHistoryByTenantId = async (req, res) => {
         AmountReceived: payment.AmountReceived,
         PaymentType: payment.PaymentType,
         imagePath: payment.imagePath,
+
+        // PaymentDate: new Date(payment.PaymentDate).toLocaleString("en-US", {
+        //   timeZone: "Asia/Kolkata",
+        // }),
         PaymentDate: moment
           .utc(payment.PaymentDate)
           // .tz("Asia/Kolkata", true)
@@ -362,8 +366,24 @@ exports.createPaymentHistory = async (req, res) => {
       }
       console.log("Payment Date", PaymentDate);
       // Store PaymentDate as UTC without conversion
-      const paymentDateUTC = moment(PaymentDate).format("YYYY-MM-DD HH:mm:ss");
-      console.log("converted date", paymentDateUTC);
+
+      // if (moment(PaymentDate, moment.ISO_8601, true).isValid()) {
+      //   // Parse ISO 8601 format
+      //   formattedPaymentDate = moment(PaymentDate).toDate(); // Convert to JavaScript Date object
+      // } else if (moment(PaymentDate, "YYYY-MM-DD HH:mm:ss", true).isValid()) {
+      //   // Parse strictly formatted YYYY-MM-DD
+      //   formattedPaymentDate = moment(
+      //     PaymentDate,
+      //     "YYYY-MM-DD HH:mm:ss"
+      //   ).toDate();
+      // } else {
+      //   return res.status(400).json({
+      //     message:
+      //       "Invalid PaymentDate format. Use 'YYYY-MM-DD HH:mm:ss' or ISO 8601.",
+      //   });
+      // }
+      // const paymentDateUTC = new Date(PaymentDate); //moment(PaymentDate).format("YYYY-MM-DD HH:mm:ss");
+      // console.log("converted date", paymentDateUTC);
       // Handle optional image upload for PaymentType "O"
       let paymentReceiptUrl = null;
       if (PaymentType === "O") {
@@ -410,13 +430,14 @@ exports.createPaymentHistory = async (req, res) => {
         TransactionRefId,
         AmountReceived,
         PaymentType,
-        PaymentDate: paymentDateUTC, // Store UTC date in DB
+
+        PaymentDate: new Date(PaymentDate), //formattedPaymentDate,
         CreatedBy,
-        CreatedDate: new Date(),
-        UpdatedDate: new Date(),
+        CreatedDate: moment().format("YYYY-MM-DD"),
+        UpdatedDate: moment().format("YYYY-MM-DD"),
         imagePath: paymentReceiptUrl,
       };
-
+      console.log("new payment", newPaymentData);
       // Create the payment record
       const newPayment = await PaymentHistory.create(newPaymentData);
 

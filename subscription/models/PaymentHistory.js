@@ -65,6 +65,12 @@ const PaymentHistory = sequelize.define(
     timestamps: false, // Because we are using `CreatedDate` and `UpdatedDate` instead of `createdAt` and `updatedAt`
   }
 );
+PaymentHistory.beforeCreate((payment) => {
+  payment.PaymentDate = new Date(payment.PaymentDate)
+    .toISOString()
+    .slice(0, 19)
+    .replace("T", " ");
+});
 
 // Hooks for updating UpdatedDate automatically
 PaymentHistory.beforeUpdate((payment, options) => {
