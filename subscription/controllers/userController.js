@@ -216,6 +216,7 @@ exports.getUserByIdAndTenant = async (req, res) => {
   }
 };
 // Create a new User for a specific TenantId
+
 exports.createUser = async (req, res) => {
   try {
     // Process file upload
@@ -261,19 +262,9 @@ exports.createUser = async (req, res) => {
 
       // Validate and format DOB
       let formattedDOB;
-      // if (moment(DOB, "YYYY-MM-DD", true).isValid()) {
-      //   formattedDOB = moment(DOB, "YYYY-MM-DD").toDate(); // Convert to JavaScript Date object
-      // } else {
-      //   return res.status(400).json({
-      //     message: "Invalid DOB format. Use 'YYYY-MM-DD'.",
-      //   });
-      // }
-
       if (moment(DOB, moment.ISO_8601, true).isValid()) {
-        // Parse ISO 8601 format
-        formattedDOB = moment(DOB).toDate(); // Convert to JavaScript Date object
+        formattedDOB = moment(DOB).toDate();
       } else if (moment(DOB, "YYYY-MM-DD", true).isValid()) {
-        // Parse strictly formatted YYYY-MM-DD
         formattedDOB = moment(DOB, "YYYY-MM-DD").toDate();
       } else {
         return res.status(400).json({
@@ -281,7 +272,7 @@ exports.createUser = async (req, res) => {
         });
       }
 
-      // Create user
+      // Create user with optional profileImage & adharImage
       const user = await User.create({
         tenantId,
         Name,
@@ -296,10 +287,12 @@ exports.createUser = async (req, res) => {
         CreatedBy,
         PermanentAddress,
         PresentAddress,
+        profileImage: null, // Default to null if not provided
+        adharImage: null, // Default to null if not provided
       });
 
-      // Handle file upload if files exist
-      if (req.files) {
+      // Handle file upload only if files exist
+      if (req.files && Object.keys(req.files).length > 0) {
         const tempFolder = req.tempFolder;
         const files = req.files;
         await handleUserFolderAndImages(tempFolder, user.Id, files, req);
@@ -307,9 +300,9 @@ exports.createUser = async (req, res) => {
 
       // Respond with success
       res.status(201).json({
-        id: user.Id, // Return user id
-        name: user.Name, // Return user name
-        mobileNumber: user.MobileNo, // Return user mobile number
+        id: user.Id,
+        name: user.Name,
+        mobileNumber: user.MobileNo,
       });
     });
   } catch (error) {
@@ -322,23 +315,76 @@ exports.createUser = async (req, res) => {
 };
 
 // Update User by UserId and TenantId
+
 exports.updateUser = async (req, res) => {
   try {
     const { tenantId, userId } = req.params;
     const updatedData = req.body;
 
+    // Convert userId to integer if necessary
+    const numericUserId = parseInt(userId, 10);
+    if (isNaN(numericUserId)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid userId. Must be a number." });
+    }
+
+    // Find user
     const user = await User.findOne({
-      where: { TenantId: tenantId, Id: userId },
+      where: { TenantId: tenantId, Id: numericUserId },
     });
 
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
 
+    // Preserve existing ProfileImagePath and AadharImagePath if not provided
+    updatedData.ProfileImagePath =
+      updatedData.ProfileImagePath || user.ProfileImagePath;
+    updatedData.AadharImagePath =
+      updatedData.AadharImagePath || user.AadharImagePath;
+
+    // ✅ Handle DOB conversion (prevent invalid date errors)
+    if (updatedData.DOB) {
+      if (moment(updatedData.DOB, moment.ISO_8601, true).isValid()) {
+        updatedData.DOB = moment(updatedData.DOB).format("YYYY-MM-DD");
+      } else if (moment(updatedData.DOB, "YYYY-MM-DD", true).isValid()) {
+        updatedData.DOB = moment(updatedData.DOB, "YYYY-MM-DD").format(
+          "YYYY-MM-DD"
+        );
+      } else {
+        return res.status(400).json({
+          message: "Invalid DOB format. Use 'YYYY-MM-DD' or ISO 8601.",
+        });
+      }
+    }
+
+    // Handle file uploads (if files exist)
+    if (req.files && Object.keys(req.files).length > 0) {
+      if (!req.tempFolder) {
+        return res
+          .status(400)
+          .json({ message: "Temporary folder is missing." });
+      }
+
+      const tempFolder = req.tempFolder;
+      const files = req.files;
+      await handleUserFolderAndImages(tempFolder, numericUserId, files, req);
+
+      // Assuming handleUserFolderAndImages updates file paths, re-fetch them
+      updatedData.ProfileImagePath =
+        files.profileImagePath || updatedData.ProfileImagePath;
+      updatedData.AadharImagePath =
+        files.aadharImagePath || updatedData.AadharImagePath;
+    }
+
+    // Update user data
     await user.update(updatedData);
 
+    // Construct response
     const response = {
       Id: user.Id,
+      tenantId: user.tenantId,
       Name: user.Name,
       Wing: user.Wing,
       RoomNo: user.RoomNo,

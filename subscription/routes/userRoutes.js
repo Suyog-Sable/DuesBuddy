@@ -221,7 +221,7 @@ router.get("/single/:tenantId/:userId", getUserByIdAndTenant);
  *                 format: binary
  *               DOB:
  *                 type: string
- *                 format: date-time
+ *                 format: date
  *               IsTrainer:
  *                 type: boolean
  *                 default: false
@@ -273,7 +273,7 @@ router.get("/single/:tenantId/:userId", getUserByIdAndTenant);
  *                       type: string
  *                     DOB:
  *                       type: string
- *                       format: date-time
+ *                       format: date
  *                     IsTrainer:
  *                       type: boolean
  *                     CreatedBy:
@@ -316,17 +316,17 @@ router.post("/:tenantId", createUser);
  *         required: true
  *         description: Tenant ID to filter users.
  *         schema:
- *           type: integer
- *       - name: Id
+ *           type: string
+ *       - name: userId
  *         in: path
  *         required: true
- *         description: User ID to identify the user to be updated.
+ *         description: User ID to retrieve the specific user.
  *         schema:
  *           type: integer
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -344,6 +344,7 @@ router.post("/:tenantId", createUser);
  *                 type: string
  *               AadharImagePath:
  *                 type: string
+ *                 format: binary
  *               PermanentAddress:
  *                 type: string
  *               PresentAddress:
@@ -352,12 +353,13 @@ router.post("/:tenantId", createUser);
  *                 type: string
  *               ProfileImagePath:
  *                 type: string
+ *                 format: binary
  *               DOB:
- *                 type: dateonly
+ *                 type: string
  *                 format: date
  *               IsTrainer:
  *                 type: boolean
- *               CreatedBy:
+ *               UpdatedBy:
  *                 type: integer
  *               Extra1:
  *                 type: string
