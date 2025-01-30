@@ -1,26 +1,26 @@
-
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db');
+const { DataTypes } = require("sequelize");
+const { sequelize } = require("../config/db");
 
 // Define the Tenant model
-const Tenant = sequelize.define('Tenant', {
-  Id: {
-    type: DataTypes.STRING,
-    primaryKey: true, // Primary key in the Tenants table
+const Tenant = sequelize.define(
+  "Tenant",
+  {
+    Id: {
+      type: DataTypes.STRING,
+      primaryKey: true, // Primary key in the Tenants table
+    },
+    FullName: { type: DataTypes.STRING(50), allowNull: false },
+    EmailId: { type: DataTypes.STRING(100), allowNull: false },
+    MobileNo: { type: DataTypes.STRING(15), allowNull: false },
+    Location: { type: DataTypes.STRING(500), allowNull: false },
+    Password: { type: DataTypes.STRING(50), allowNull: false },
+    ConfirmPassword: { type: DataTypes.STRING(50), allowNull: false },
   },
-  guid: { type: DataTypes.CHAR(36), allowNull: false },
-  username: { type: DataTypes.STRING(50), allowNull: false },
-  password: { type: DataTypes.STRING(50), allowNull: false },
-  email: { type: DataTypes.STRING(100), allowNull: false },
-  databaseName: { type: DataTypes.STRING(100), allowNull: false },
-  UploadFolderPath: { type: DataTypes.STRING(200), allowNull: true },
-  UploadUrlPath: { type: DataTypes.STRING(200), allowNull: true },
-}, {
-  tableName: 'Tenants',
-  schema: 'subscribe',
-  timestamps: false, // Disable timestamps
-});
+  {
+    tableName: "Tenants",
+    schema: "subscribe",
+    timestamps: false, // Disable timestamps
+  }
+);
 
 module.exports = Tenant;
-
-

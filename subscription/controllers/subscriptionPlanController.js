@@ -22,19 +22,15 @@ exports.getSubscriptionPlansByTenantId = async (req, res) => {
       return res.status(404).json({ message: "Tenant not found." });
     }
 
-    const response = {
-      tenantId: tenant.tenantId,
-      Email: tenant.Email,
-      Plan: tenant.SubscriptionPlans.map((plan) => ({
-        tenantId: plan.tenantId,
-        Id: plan.Id,
-        Name: plan.Name,
-        Amount: plan.Amount,
-        Days: plan.Days,
-        IsActive: plan.IsActive,
-        Shortcode: plan.Shortcode,
-      })),
-    };
+    const response = tenant.SubscriptionPlans.map((plan) => ({
+      tenantId: plan.tenantId,
+      Id: plan.Id,
+      Name: plan.Name,
+      Amount: plan.Amount,
+      Days: plan.Days,
+      IsActive: plan.IsActive,
+      Shortcode: plan.Shortcode,
+    }));
 
     res.status(200).json(response);
   } catch (error) {

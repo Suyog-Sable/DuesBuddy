@@ -10,6 +10,7 @@ const paymentHistoryRoutes = require("./routes/PaymentHistoryRoutes");
 const systemUserRoutes = require("./routes/SystemUserRoutes");
 const attendanceRoutes = require("./routes/AttendanceRoutes");
 const userDetailsRoutes = require("./routes/UserDetailsRoutes");
+const tenantRoutes = require("./routes/TenantRoutes");
 const sequelize = require("./config/db");
 
 const app = express();
@@ -62,6 +63,7 @@ app.use("/payment-history", paymentHistoryRoutes);
 app.use("/system-users", systemUserRoutes);
 app.use("/attendance", attendanceRoutes);
 app.use("/", userDetailsRoutes);
+app.use("/", tenantRoutes);
 // Start server
 const PORT = process.env.PORT || 3001;
 
