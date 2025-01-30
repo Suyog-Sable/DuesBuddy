@@ -448,7 +448,7 @@ router.put("/:tenantId/:userId", updateUser);
  *         required: true
  *         description: Tenant ID to identify the user.
  *         schema:
- *           type: integer
+ *           type: string
  *       - name: Id
  *         in: path
  *         required: true

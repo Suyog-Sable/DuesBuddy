@@ -3,8 +3,9 @@ const PaymentHistory = require("../models/PaymentHistory");
 const path = require("path");
 const fs = require("fs");
 require("dotenv").config();
-const moment = require("moment");
+// const moment = require("moment");
 const upload = require("../middleware/upload");
+
 // Get payment history by tenant ID
 exports.getPaymentHistoryByTenantId = async (req, res) => {
   try {
@@ -329,6 +330,131 @@ exports.getPaymentHistoryByTenantId = async (req, res) => {
 //     return res.status(500).json({ error: error.message });
 //   }
 // };
+
+//Harshali ma'am code
+// exports.createPaymentHistory = async (req, res) => {
+//   try {
+//     upload(req, res, async (err) => {
+//       if (err) {
+//         console.error("Error during file upload:", err);
+//         return res.status(400).json({ error: err.message });
+//       }
+
+//       const {
+//         UserId,
+//         tenantId,
+//         SubscriptionPlanId,
+//         TransactionRefId,
+//         AmountReceived,
+//         PaymentType,
+//         PaymentDate,
+//         CreatedBy,
+//       } = req.body;
+
+//       // Validate required fields
+//       const requiredFields = [
+//         "UserId",
+//         "SubscriptionPlanId",
+//         "TransactionRefId",
+//         "AmountReceived",
+//         "PaymentType",
+//         "PaymentDate",
+//       ];
+
+//       const missingFields = requiredFields.filter((field) => !req.body[field]);
+//       if (missingFields.length > 0) {
+//         return res.status(400).json({
+//           error: `Missing required fields: ${missingFields.join(", ")}`,
+//         });
+//       }
+//       console.log("Payment Date", PaymentDate);
+//       // Store PaymentDate as UTC without conversion
+
+//       // if (moment(PaymentDate, moment.ISO_8601, true).isValid()) {
+//       //   // Parse ISO 8601 format
+//       //   formattedPaymentDate = moment(PaymentDate).toDate(); // Convert to JavaScript Date object
+//       // } else if (moment(PaymentDate, "YYYY-MM-DD HH:mm:ss", true).isValid()) {
+//       //   // Parse strictly formatted YYYY-MM-DD
+//       //   formattedPaymentDate = moment(
+//       //     PaymentDate,
+//       //     "YYYY-MM-DD HH:mm:ss"
+//       //   ).toDate();
+//       // } else {
+//       //   return res.status(400).json({
+//       //     message:
+//       //       "Invalid PaymentDate format. Use 'YYYY-MM-DD HH:mm:ss' or ISO 8601.",
+//       //   });
+//       // }
+//       // const paymentDateUTC = new Date(PaymentDate); //moment(PaymentDate).format("YYYY-MM-DD HH:mm:ss");
+//       // console.log("converted date", paymentDateUTC);
+//       // Handle optional image upload for PaymentType "O"
+//       let paymentReceiptUrl = null;
+//       if (PaymentType === "O") {
+//         if (!req.files || !req.files.imagePath) {
+//           return res.status(400).json({
+//             error: "ImagePath is required when PaymentType is 'O'.",
+//           });
+//         }
+
+//         const uploadsDir = path.normalize(process.env.UPLOADS_DIR + `/users`);
+//         const uploadsUrl = `${process.env.UPLOADS_URL}/users`.replace(
+//           /\\/g,
+//           "/"
+//         );
+//         const userFolder = path.join(uploadsDir, String(UserId));
+
+//         // Ensure user folder exists
+//         if (!fs.existsSync(userFolder)) {
+//           fs.mkdirSync(userFolder, { recursive: true });
+//         }
+
+//         const tempFilePath = path.join(
+//           req.tempFolder,
+//           req.files.imagePath[0].filename
+//         );
+//         const paymentReceiptPath = path.join(
+//           userFolder,
+//           req.files.imagePath[0].filename
+//         );
+
+//         // Move the file and clean up temp folder
+//         await fs.promises.rename(tempFilePath, paymentReceiptPath);
+//         await fs.promises.rm(req.tempFolder, { recursive: true, force: true });
+
+//         // Construct file URL
+//         paymentReceiptUrl = `${uploadsUrl}/${UserId}/${req.files.imagePath[0].filename}`;
+//       }
+
+//       // Prepare data for database insertion
+//       const newPaymentData = {
+//         UserId,
+//         tenantId,
+//         SubscriptionPlanId,
+//         TransactionRefId,
+//         AmountReceived,
+//         PaymentType,
+
+//         PaymentDate: new Date(PaymentDate), //formattedPaymentDate,
+//         CreatedBy,
+//         CreatedDate: moment().format("YYYY-MM-DD"),
+//         UpdatedDate: moment().format("YYYY-MM-DD"),
+//         imagePath: paymentReceiptUrl,
+//       };
+//       console.log("new payment", newPaymentData);
+//       // Create the payment record
+//       const newPayment = await PaymentHistory.create(newPaymentData);
+
+//       return res.status(201).json(newPayment);
+//     });
+//   } catch (error) {
+//     console.error("Error creating payment record:", error);
+//     return res.status(500).json({ error: error.message });
+//   }
+// };
+
+// Suyog Sable
+const moment = require("moment-timezone");
+
 exports.createPaymentHistory = async (req, res) => {
   try {
     upload(req, res, async (err) => {
@@ -344,7 +470,6 @@ exports.createPaymentHistory = async (req, res) => {
         TransactionRefId,
         AmountReceived,
         PaymentType,
-        PaymentDate,
         CreatedBy,
       } = req.body;
 
@@ -355,7 +480,6 @@ exports.createPaymentHistory = async (req, res) => {
         "TransactionRefId",
         "AmountReceived",
         "PaymentType",
-        "PaymentDate",
       ];
 
       const missingFields = requiredFields.filter((field) => !req.body[field]);
@@ -364,26 +488,15 @@ exports.createPaymentHistory = async (req, res) => {
           error: `Missing required fields: ${missingFields.join(", ")}`,
         });
       }
-      console.log("Payment Date", PaymentDate);
-      // Store PaymentDate as UTC without conversion
 
-      // if (moment(PaymentDate, moment.ISO_8601, true).isValid()) {
-      //   // Parse ISO 8601 format
-      //   formattedPaymentDate = moment(PaymentDate).toDate(); // Convert to JavaScript Date object
-      // } else if (moment(PaymentDate, "YYYY-MM-DD HH:mm:ss", true).isValid()) {
-      //   // Parse strictly formatted YYYY-MM-DD
-      //   formattedPaymentDate = moment(
-      //     PaymentDate,
-      //     "YYYY-MM-DD HH:mm:ss"
-      //   ).toDate();
-      // } else {
-      //   return res.status(400).json({
-      //     message:
-      //       "Invalid PaymentDate format. Use 'YYYY-MM-DD HH:mm:ss' or ISO 8601.",
-      //   });
-      // }
-      // const paymentDateUTC = new Date(PaymentDate); //moment(PaymentDate).format("YYYY-MM-DD HH:mm:ss");
-      // console.log("converted date", paymentDateUTC);
+      // Get the current time in IST (India Standard Time)
+      const currentTimeIST = moment().tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
+
+      // Now, set PaymentDate to current IST time
+      const formattedPaymentDate = currentTimeIST;
+
+      console.log("Formatted Payment Date (Current Time in IST):", formattedPaymentDate);
+
       // Handle optional image upload for PaymentType "O"
       let paymentReceiptUrl = null;
       if (PaymentType === "O") {
@@ -394,10 +507,7 @@ exports.createPaymentHistory = async (req, res) => {
         }
 
         const uploadsDir = path.normalize(process.env.UPLOADS_DIR + `/users`);
-        const uploadsUrl = `${process.env.UPLOADS_URL}/users`.replace(
-          /\\/g,
-          "/"
-        );
+        const uploadsUrl = `${process.env.UPLOADS_URL}/users`.replace(/\\/g, "/");
         const userFolder = path.join(uploadsDir, String(UserId));
 
         // Ensure user folder exists
@@ -405,14 +515,8 @@ exports.createPaymentHistory = async (req, res) => {
           fs.mkdirSync(userFolder, { recursive: true });
         }
 
-        const tempFilePath = path.join(
-          req.tempFolder,
-          req.files.imagePath[0].filename
-        );
-        const paymentReceiptPath = path.join(
-          userFolder,
-          req.files.imagePath[0].filename
-        );
+        const tempFilePath = path.join(req.tempFolder, req.files.imagePath[0].filename);
+        const paymentReceiptPath = path.join(userFolder, req.files.imagePath[0].filename);
 
         // Move the file and clean up temp folder
         await fs.promises.rename(tempFilePath, paymentReceiptPath);
@@ -430,14 +534,15 @@ exports.createPaymentHistory = async (req, res) => {
         TransactionRefId,
         AmountReceived,
         PaymentType,
-
-        PaymentDate: new Date(PaymentDate), //formattedPaymentDate,
+        PaymentDate: formattedPaymentDate, // Set to current time in IST
         CreatedBy,
-        CreatedDate: moment().format("YYYY-MM-DD"),
-        UpdatedDate: moment().format("YYYY-MM-DD"),
+        CreatedDate: moment().tz("Asia/Kolkata").toISOString(), // Current date in IST with timezone
+        UpdatedDate: moment().tz("Asia/Kolkata").toISOString(), // Current date in IST with timezone
         imagePath: paymentReceiptUrl,
       };
-      console.log("new payment", newPaymentData);
+
+      console.log("New Payment Data:", newPaymentData);
+
       // Create the payment record
       const newPayment = await PaymentHistory.create(newPaymentData);
 
@@ -449,7 +554,11 @@ exports.createPaymentHistory = async (req, res) => {
   }
 };
 
-// Update an existing payment record
+
+
+
+
+
 exports.updatePaymentHistory = async (req, res) => {
   try {
     const { tenantId, paymentId } = req.params;
