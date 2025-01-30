@@ -280,7 +280,7 @@ exports.createUser = async (req, res) => {
         DOB: formattedDOB,
         IsTrainer,
         Location,
-        CreatedBy,
+        CreatedBy: null,
         PermanentAddress,
         PresentAddress,
         profileImage: null, // Default to null if not provided
@@ -394,7 +394,7 @@ exports.updateUser = async (req, res) => {
       ProfileImagePath: user.ProfileImagePath,
       DOB: user.DOB,
       IsTrainer: user.IsTrainer,
-      CreatedBy: user.CreatedBy,
+      CreatedBy: null,
       CreatedDate: user.CreatedDate,
       UpdatedBy: user.UpdatedBy,
       UpdatedDate: user.UpdatedDate,

@@ -1,10 +1,10 @@
-const express = require('express');
-const { 
-    getSubscriptionPlansByTenantId,
-    createSubscriptionPlan,
-    updateSubscriptionPlan,
-    deleteSubscriptionPlan,
-} = require('../controllers/subscriptionPlanController');
+const express = require("express");
+const {
+  getSubscriptionPlansByTenantId,
+  createSubscriptionPlan,
+  updateSubscriptionPlan,
+  deleteSubscriptionPlan,
+} = require("../controllers/subscriptionPlanController");
 const router = express.Router();
 
 /**
@@ -29,7 +29,7 @@ const router = express.Router();
  *       500:
  *         description: Server error.
  */
-router.get('/:tenantId', getSubscriptionPlansByTenantId);
+router.get("/:tenantId", getSubscriptionPlansByTenantId);
 /**
  * @swagger
  * /subscription-plans:
@@ -113,7 +113,7 @@ router.get('/:tenantId', getSubscriptionPlansByTenantId);
  *         description: Server error.
  */
 
-router.post('/', createSubscriptionPlan);
+router.post("/", createSubscriptionPlan);
 
 /**
  * @swagger
@@ -148,10 +148,6 @@ router.post('/', createSubscriptionPlan);
  *                 type: boolean
  *               Shortcode:
  *                 type: string
- *               CreatedBy:
- *                 type: integer
- *                 description: Shortcode for the subscription plan
- *                 example: 1
  *     responses:
  *       200:
  *         description: Subscription plan updated successfully.
@@ -160,7 +156,7 @@ router.post('/', createSubscriptionPlan);
  *       500:
  *         description: Server error.
  */
-router.put('/:tenantId/:planId', updateSubscriptionPlan);
+router.put("/:tenantId/:planId", updateSubscriptionPlan);
 
 /**
  * @swagger
@@ -186,6 +182,6 @@ router.put('/:tenantId/:planId', updateSubscriptionPlan);
  *       500:
  *         description: Server error.
  */
-router.delete('/:tenantId/:planId', deleteSubscriptionPlan);
+router.delete("/:tenantId/:planId", deleteSubscriptionPlan);
 
 module.exports = router;

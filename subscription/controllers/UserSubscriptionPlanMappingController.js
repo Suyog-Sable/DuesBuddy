@@ -110,7 +110,6 @@ exports.createUserSubscriptionPlanMapping = async (req, res) => {
       DiscountCoupon,
       isActive,
       Remarks,
-      CreatedBy,
     } = req.body;
 
     const newMapping = await UserSubscriptionPlanMapping.create({
@@ -123,7 +122,6 @@ exports.createUserSubscriptionPlanMapping = async (req, res) => {
       DiscountCoupon,
       isActive,
       Remarks,
-      CreatedBy,
     });
 
     res.status(201).json(newMapping);
@@ -144,7 +142,6 @@ exports.updateUserSubscriptionPlanMapping = async (req, res) => {
       DiscountCoupon,
       isActive,
       Remarks,
-      UpdatedBy,
     } = req.body;
 
     const mapping = await UserSubscriptionPlanMapping.findOne({
@@ -168,7 +165,7 @@ exports.updateUserSubscriptionPlanMapping = async (req, res) => {
     mapping.DiscountCoupon = DiscountCoupon || mapping.DiscountCoupon;
     mapping.isActive = isActive !== undefined ? isActive : mapping.isActive;
     mapping.Remarks = Remarks || mapping.Remarks;
-    mapping.UpdatedBy = UpdatedBy || mapping.UpdatedBy;
+    // mapping.UpdatedBy = UpdatedBy || mapping.UpdatedBy;
 
     await mapping.save();
 

@@ -65,13 +65,13 @@ Attendance.associate = (models) => {
     foreignKey: "UserId",
     as: "User",
   });
-  Attendance.belongsTo(models.SystemUser, {
-    foreignKey: "CheckInBy",
-    as: "CheckInByUser",
-  });
-  Attendance.belongsTo(models.SystemUser, {
-    foreignKey: "CheckOutBy",
-    as: "CheckOutByUser",
-  });
+  // Attendance.belongsTo(models.SystemUser, {
+  //   foreignKey: "CheckInBy",
+  //   as: "CheckInByUser",
+  // });
+  // Attendance.belongsTo(models.SystemUser, {
+  //   foreignKey: "CheckOutBy",
+  //   as: "CheckOutByUser",
+  // });
 };
 module.exports = Attendance;

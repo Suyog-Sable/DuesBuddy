@@ -3,6 +3,8 @@ const PaymentHistory = require("../models/PaymentHistory");
 const path = require("path");
 const fs = require("fs");
 require("dotenv").config();
+const moment = require("moment-timezone");
+
 // const moment = require("moment");
 const upload = require("../middleware/upload");
 
@@ -453,7 +455,6 @@ exports.getPaymentHistoryByTenantId = async (req, res) => {
 // };
 
 // Suyog Sable
-const moment = require("moment-timezone");
 
 exports.createPaymentHistory = async (req, res) => {
   try {
@@ -470,7 +471,7 @@ exports.createPaymentHistory = async (req, res) => {
         TransactionRefId,
         AmountReceived,
         PaymentType,
-        CreatedBy,
+        // CreatedBy,
       } = req.body;
 
       // Validate required fields
@@ -490,12 +491,12 @@ exports.createPaymentHistory = async (req, res) => {
       }
 
       // Get the current time in IST (India Standard Time)
-      const currentTimeIST = moment().tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
+      const currentTimeIST = moment()
+        .tz("Asia/Kolkata")
+        .format("YYYY-MM-DD HH:mm:ss");
 
       // Now, set PaymentDate to current IST time
       const formattedPaymentDate = currentTimeIST;
-
-      console.log("Formatted Payment Date (Current Time in IST):", formattedPaymentDate);
 
       // Handle optional image upload for PaymentType "O"
       let paymentReceiptUrl = null;
@@ -507,7 +508,10 @@ exports.createPaymentHistory = async (req, res) => {
         }
 
         const uploadsDir = path.normalize(process.env.UPLOADS_DIR + `/users`);
-        const uploadsUrl = `${process.env.UPLOADS_URL}/users`.replace(/\\/g, "/");
+        const uploadsUrl = `${process.env.UPLOADS_URL}/users`.replace(
+          /\\/g,
+          "/"
+        );
         const userFolder = path.join(uploadsDir, String(UserId));
 
         // Ensure user folder exists
@@ -515,8 +519,14 @@ exports.createPaymentHistory = async (req, res) => {
           fs.mkdirSync(userFolder, { recursive: true });
         }
 
-        const tempFilePath = path.join(req.tempFolder, req.files.imagePath[0].filename);
-        const paymentReceiptPath = path.join(userFolder, req.files.imagePath[0].filename);
+        const tempFilePath = path.join(
+          req.tempFolder,
+          req.files.imagePath[0].filename
+        );
+        const paymentReceiptPath = path.join(
+          userFolder,
+          req.files.imagePath[0].filename
+        );
 
         // Move the file and clean up temp folder
         await fs.promises.rename(tempFilePath, paymentReceiptPath);
@@ -535,7 +545,7 @@ exports.createPaymentHistory = async (req, res) => {
         AmountReceived,
         PaymentType,
         PaymentDate: formattedPaymentDate, // Set to current time in IST
-        CreatedBy,
+        // CreatedBy,
         CreatedDate: moment().tz("Asia/Kolkata").toISOString(), // Current date in IST with timezone
         UpdatedDate: moment().tz("Asia/Kolkata").toISOString(), // Current date in IST with timezone
         imagePath: paymentReceiptUrl,
@@ -554,11 +564,6 @@ exports.createPaymentHistory = async (req, res) => {
   }
 };
 
-
-
-
-
-
 exports.updatePaymentHistory = async (req, res) => {
   try {
     const { tenantId, paymentId } = req.params;
@@ -576,7 +581,7 @@ exports.updatePaymentHistory = async (req, res) => {
         AmountReceived,
         PaymentType,
         PaymentDate,
-        UpdatedBy,
+        // UpdatedBy,
       } = req.body;
 
       const payment = await PaymentHistory.findOne({
@@ -650,7 +655,7 @@ exports.updatePaymentHistory = async (req, res) => {
       payment.PaymentType = PaymentType || payment.PaymentType;
       payment.imagePath = paymentReceiptUrl || payment.imagePath;
       payment.PaymentDate = paymentDateValue;
-      payment.UpdatedBy = UpdatedBy || payment.UpdatedBy;
+      // payment.UpdatedBy = UpdatedBy || payment.UpdatedBy;
       payment.UpdatedDate = new Date();
 
       await payment.save();
