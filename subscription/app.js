@@ -24,6 +24,14 @@ const swaggerOptions = {
       version: "1.0.0",
     },
   },
+  servers: [
+    {
+      url: "https://localhost:3001",
+
+      //url: "https://test-sub-api.fdtl.in",
+      description: "Local Server",
+    },
+  ],
   apis: ["./routes/*.js"],
 };
 

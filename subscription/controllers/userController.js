@@ -134,34 +134,30 @@ exports.getUsersByTenantId = async (req, res) => {
       return res.status(404).json({ message: "Tenant not found." });
     }
 
-    const response = {
-      Id: tenant.Id,
-      email: tenant.email,
-      Users: tenant.Users.map((user) => ({
-        tenantId: user.tenantId,
-        Id: user.Id,
-        Name: user.Name,
-        Wing: user.Wing,
-        RoomNo: user.RoomNo,
-        MobileNo: user.MobileNo,
-        EmailId: user.EmailId,
-        Gender: user.Gender,
-        AadharImagePath: user.AadharImagePath,
-        PermanentAddress: user.PermanentAddress,
-        PresentAddress: user.PresentAddress,
-        Location: user.Location,
-        ProfileImagePath: user.ProfileImagePath,
-        DOB: user.DOB,
-        IsTrainer: user.IsTrainer,
-        CreatedBy: user.CreatedBy,
-        CreatedDate: user.CreatedDate,
-        UpdatedBy: user.UpdatedBy,
-        UpdatedDate: user.UpdatedDate,
-        Extra1: user.Extra1,
-        Extra2: user.Extra2,
-        Extra3: user.Extra3,
-      })),
-    };
+    const response = tenant.Users.map((user) => ({
+      Id: user.Id,
+      tenantId: user.tenantId,
+      Name: user.Name,
+      Wing: user.Wing,
+      RoomNo: user.RoomNo,
+      MobileNo: user.MobileNo,
+      EmailId: user.EmailId,
+      Gender: user.Gender,
+      AadharImagePath: user.AadharImagePath,
+      PermanentAddress: user.PermanentAddress,
+      PresentAddress: user.PresentAddress,
+      Location: user.Location,
+      ProfileImagePath: user.ProfileImagePath,
+      DOB: user.DOB,
+      IsTrainer: user.IsTrainer,
+      CreatedBy: user.CreatedBy,
+      CreatedDate: user.CreatedDate,
+      UpdatedBy: user.UpdatedBy,
+      UpdatedDate: user.UpdatedDate,
+      Extra1: user.Extra1,
+      Extra2: user.Extra2,
+      Extra3: user.Extra3,
+    }));
 
     res.status(200).json(response);
   } catch (error) {
