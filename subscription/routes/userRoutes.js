@@ -1,11 +1,13 @@
-const express = require('express');
+const express = require("express");
 const {
   getUsersByTenantId,
   getUserByIdAndTenant,
   createUser,
   updateUser,
   deleteUser,
-} = require('../controllers/userController');
+  getFormattedUsersByTenantId,
+  getUserSubscriptionPlanDetails,
+} = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -85,11 +87,11 @@ const router = express.Router();
  *       500:
  *         description: Server error.
  */
-router.get('/:tenantId', getUsersByTenantId);
+router.get("/:tenantId", getUsersByTenantId);
 
 /**
  * @swagger
- * /users/{tenantId}/{userId}:
+ * /users/single/{tenantId}/{userId}:
  *   get:
  *     summary: Get a specific user by tenant ID and user ID
  *     tags:
@@ -167,13 +169,13 @@ router.get('/:tenantId', getUsersByTenantId);
  *       500:
  *         description: Server error.
  */
-router.get('/:tenantId/:userId', getUserByIdAndTenant);
+router.get("/single/:tenantId/:userId", getUserByIdAndTenant);
 
 /**
  * @swagger
  * /users/{tenantId}:
  *   post:
- *     summary: Create a new user for a specific tenant
+ *     summary: Create a new user for a specific tenant.
  *     tags:
  *       - Users
  *     parameters:
@@ -186,7 +188,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -207,6 +209,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *                 type: string
  *               AadharImagePath:
  *                 type: string
+ *                 format: binary
  *               PermanentAddress:
  *                 type: string
  *               PresentAddress:
@@ -215,9 +218,10 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *                 type: string
  *               ProfileImagePath:
  *                 type: string
+ *                 format: binary
  *               DOB:
  *                 type: string
- *                 format: date-time
+ *                 format: date
  *               IsTrainer:
  *                 type: boolean
  *                 default: false
@@ -228,8 +232,6 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *               Extra2:
  *                 type: string
  *               Extra3:
- *                 type: string
- *               tenantId:
  *                 type: string
  *     responses:
  *       201:
@@ -242,7 +244,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *                 message:
  *                   type: string
  *                   example: User created successfully.
- *                 newUser:
+ *                 user:
  *                   type: object
  *                   properties:
  *                     Id:
@@ -271,7 +273,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *                       type: string
  *                     DOB:
  *                       type: string
- *                       format: date-time
+ *                       format: date
  *                     IsTrainer:
  *                       type: boolean
  *                     CreatedBy:
@@ -282,7 +284,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *                     UpdatedBy:
  *                       type: integer
  *                     UpdatedDate:
- *                       type: date
+ *                       type: string
  *                       format: date-time
  *                     Extra1:
  *                       type: string
@@ -299,7 +301,7 @@ router.get('/:tenantId/:userId', getUserByIdAndTenant);
  *       500:
  *         description: Server error.
  */
-router.post('/:tenantId', createUser);
+router.post("/:tenantId", createUser);
 
 /**
  * @swagger
@@ -314,17 +316,17 @@ router.post('/:tenantId', createUser);
  *         required: true
  *         description: Tenant ID to filter users.
  *         schema:
- *           type: integer
- *       - name: Id
+ *           type: string
+ *       - name: userId
  *         in: path
  *         required: true
- *         description: User ID to identify the user to be updated.
+ *         description: User ID to retrieve the specific user.
  *         schema:
  *           type: integer
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -342,6 +344,7 @@ router.post('/:tenantId', createUser);
  *                 type: string
  *               AadharImagePath:
  *                 type: string
+ *                 format: binary
  *               PermanentAddress:
  *                 type: string
  *               PresentAddress:
@@ -350,12 +353,13 @@ router.post('/:tenantId', createUser);
  *                 type: string
  *               ProfileImagePath:
  *                 type: string
+ *                 format: binary
  *               DOB:
- *                 type: dateonly
+ *                 type: string
  *                 format: date
  *               IsTrainer:
  *                 type: boolean
- *               CreatedBy:
+ *               UpdatedBy:
  *                 type: integer
  *               Extra1:
  *                 type: string
@@ -429,7 +433,7 @@ router.post('/:tenantId', createUser);
  *       500:
  *         description: Server error.
  */
-router.put('/:tenantId/:userId', updateUser);
+router.put("/:tenantId/:userId", updateUser);
 
 /**
  * @swagger
@@ -444,7 +448,7 @@ router.put('/:tenantId/:userId', updateUser);
  *         required: true
  *         description: Tenant ID to identify the user.
  *         schema:
- *           type: integer
+ *           type: string
  *       - name: Id
  *         in: path
  *         required: true
@@ -467,40 +471,90 @@ router.put('/:tenantId/:userId', updateUser);
  *       500:
  *         description: Server error.
  */
-router.delete('/:tenantId/:userId', deleteUser);
+router.delete("/:tenantId/:userId", deleteUser);
+
+// routes for formatted users
+
+/**
+ * @swagger
+ * /users/formatted/{tenantId}:
+ *   get:
+ *     summary: Get formatted users by tenant ID
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - name: tenantId
+ *         in: path
+ *         required: true
+ *         description: Tenant ID to filter users.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: A list of formatted users.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   formattedName:
+ *                     type: string
+ *                     example: "John Doe | 1234567890"
+ *       404:
+ *         description: No users found.
+ *       500:
+ *         description: Server error.
+ */
+router.get("/formatted/:tenantId", getFormattedUsersByTenantId);
+
+// Active Plans for user
+
+/**
+ * @swagger
+ * /users/active-plan/{tenantId}/{userId}:
+ *   get:
+ *     summary: Get active subscription plan for a user
+ *     tags:
+ *       - UserDetails
+ *     parameters:
+ *       - name: tenantId
+ *         in: path
+ *         required: true
+ *         description: Tenant ID to fetch user details.
+ *         schema:
+ *           type: string
+ *       - name: userId
+ *         in: path
+ *         required: true
+ *         description: User ID to fetch active subscription plan.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Active subscription plan details for the user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 subscriptionPlanId:
+ *                   type: string
+ *                   description: Subscription plan ID.
+ *                 planName:
+ *                   type: string
+ *                   description: Name of the subscription plan.
+ *                 status:
+ *                   type: string
+ *                   description: Active status of the subscription.
+ *       404:
+ *         description: User or subscription plan not found.
+ *       500:
+ *         description: Server error.
+ */
+router.get("/active-plan/:tenantId/:userId", getUserSubscriptionPlanDetails);
 
 module.exports = router;
-
-// const express = require("express");
-// const { getUsersByTenantId } = require("../controllers/userController");
-// const validateTenant = require("../middleware/tenantMiddleware");
-
-// const router = express.Router();
-
-// /**
-//  * @swagger
-//  * /users:
-//  *   get:
-//  *     summary: Get users by tenant ID
-//  *     tags:
-//  *       - Users
-//  *     parameters:
-//  *       - in: header
-//  *         name: tenantid
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: Tenant ID for multi-tenancy
-//  *     responses:
-//  *       200:
-//  *         description: List of users
-//  *       404:
-//  *         description: No users found
-//  *       400:
-//  *         description: Missing tenantId header
-//  *       500:
-//  *         description: Internal server error
-//  */
-// router.get("/", validateTenant, getUsersByTenantId);
-
-// module.exports = router;
