@@ -17,9 +17,8 @@ exports.getSubscriptionPlansByTenantId = async (req, res) => {
       ],
     });
 
-    console.log("Tenant", tenant);
     if (!tenant) {
-      return res.status(404).json({ message: "Tenant not found." });
+      return res.status(404).json({ message: "SubscriptionPlan not found." });
     }
 
     const response = tenant.SubscriptionPlans.map((plan) => ({

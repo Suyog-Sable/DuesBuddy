@@ -20,7 +20,7 @@ const router = express.Router();
  *         required: true
  *         description: Tenant ID to associate the new user.
  *         schema:
- *           type: string
+ *           type: integer
  *     responses:
  *       200:
  *         description: A list of subscription plans.
@@ -43,7 +43,7 @@ router.get("/:tenantId", getSubscriptionPlansByTenantId);
  *         required: true
  *         description: Tenant ID to associate the new user.
  *         schema:
- *           type: string
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -64,9 +64,9 @@ router.get("/:tenantId", getSubscriptionPlansByTenantId);
  *                 description: Validity period of the subscription plan in days
  *                 example: 30
  *               tenantId:
- *                 type: string
+ *                 type: integer
  *                 description: Tenant ID associated with the subscription plan
- *                 example: T001
+ *                 example: 1
  *               IsActive:
  *                 type: boolean
  *                 description: Whether the subscription plan is active
@@ -75,10 +75,6 @@ router.get("/:tenantId", getSubscriptionPlansByTenantId);
  *                 type: string
  *                 description: Shortcode for the subscription plan
  *                 example: BASIC
- *               CreatedBy:
- *                 type: integer
- *                 description: Shortcode for the subscription plan
- *                 example: 1
  *     responses:
  *       201:
  *         description: Subscription plan created successfully.
@@ -102,12 +98,10 @@ router.get("/:tenantId", getSubscriptionPlansByTenantId);
  *                     Days:
  *                       type: integer
  *                     tenantId:
- *                       type: string
+ *                       type: integer
  *                     IsActive:
  *                       type: boolean
  *                     Shortcode:
- *                       type: string
- *                     CreatedBy:
  *                       type: string
  *       500:
  *         description: Server error.
@@ -127,10 +121,14 @@ router.post("/", createSubscriptionPlan);
  *         in: path
  *         required: true
  *         description: Tenant ID for filtering the subscription plans.
+ *         schema:
+ *           type: integer
  *       - name: planId
  *         in: path
  *         required: true
  *         description: Subscription plan ID to update.
+ *         schema:
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -170,10 +168,14 @@ router.put("/:tenantId/:planId", updateSubscriptionPlan);
  *         in: path
  *         required: true
  *         description: Tenant ID for filtering the subscription plans.
+ *         schema:
+ *           type: integer
  *       - name: planId
  *         in: path
  *         required: true
  *         description: Subscription plan ID to delete.
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Subscription plan deleted successfully.

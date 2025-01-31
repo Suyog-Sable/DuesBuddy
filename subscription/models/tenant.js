@@ -6,7 +6,7 @@ const Tenant = sequelize.define(
   "Tenant",
   {
     Id: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       primaryKey: true, // Primary key in the Tenants table
     },
     FullName: { type: DataTypes.STRING(50), allowNull: false },
@@ -14,7 +14,6 @@ const Tenant = sequelize.define(
     MobileNo: { type: DataTypes.STRING(15), allowNull: false },
     Location: { type: DataTypes.STRING(500), allowNull: false },
     Password: { type: DataTypes.STRING(50), allowNull: false },
-    ConfirmPassword: { type: DataTypes.STRING(50), allowNull: false },
   },
   {
     tableName: "Tenants",
