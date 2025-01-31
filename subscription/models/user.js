@@ -11,6 +11,7 @@ const User = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    tenantId: { type: DataTypes.INTEGER, allowNull: false }, 
     Name: { type: DataTypes.STRING, allowNull: false },
     Wing: { type: DataTypes.STRING, allowNull: true },
     RoomNo: { type: DataTypes.STRING, allowNull: true },
@@ -35,7 +36,7 @@ const User = sequelize.define(
     Extra1: { type: DataTypes.STRING, allowNull: true },
     Extra2: { type: DataTypes.STRING, allowNull: true },
     Extra3: { type: DataTypes.STRING, allowNull: true },
-    tenantId: { type: DataTypes.STRING, allowNull: false }, // Foreign key to Tenant
+    tenantId: { type: DataTypes.STRING, allowNull: false }, 
   },
   {
     tableName: "User",

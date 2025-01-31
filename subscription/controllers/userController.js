@@ -451,7 +451,7 @@ exports.getFormattedUsersByTenantId = async (req, res) => {
     });
 
     if (!tenant) {
-      return res.status(404).json({ message: "Tenant not found." });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const response = tenant.Users.map((user) => ({

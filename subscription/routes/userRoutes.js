@@ -24,7 +24,7 @@ const router = express.Router();
  *         required: true
  *         description: Tenant ID to filter users.
  *         schema:
- *           type: string
+ *           type: integer
  *     responses:
  *       200:
  *         description: A list of users.
@@ -102,7 +102,7 @@ router.get("/:tenantId", getUsersByTenantId);
  *         required: true
  *         description: Tenant ID to filter users.
  *         schema:
- *           type: string
+ *           type: integer
  *       - name: userId
  *         in: path
  *         required: true
@@ -163,7 +163,7 @@ router.get("/:tenantId", getUsersByTenantId);
  *                 Extra3:
  *                   type: string
  *                 TenantId:
- *                   type: string
+ *                   type: integer
  *       404:
  *         description: User not found.
  *       500:
@@ -184,7 +184,7 @@ router.get("/single/:tenantId/:userId", getUserByIdAndTenant);
  *         required: true
  *         description: Tenant ID to associate the new user.
  *         schema:
- *           type: string
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -293,7 +293,7 @@ router.get("/single/:tenantId/:userId", getUserByIdAndTenant);
  *                     Extra3:
  *                       type: string
  *                     tenantId:
- *                       type: string
+ *                       type: integer
  *       400:
  *         description: Invalid input data.
  *       404:
@@ -316,7 +316,7 @@ router.post("/:tenantId", createUser);
  *         required: true
  *         description: Tenant ID to filter users.
  *         schema:
- *           type: string
+ *           type: integer
  *       - name: userId
  *         in: path
  *         required: true
@@ -448,7 +448,7 @@ router.put("/:tenantId/:userId", updateUser);
  *         required: true
  *         description: Tenant ID to identify the user.
  *         schema:
- *           type: string
+ *           type: integer
  *       - name: Id
  *         in: path
  *         required: true
@@ -488,7 +488,7 @@ router.delete("/:tenantId/:userId", deleteUser);
  *         required: true
  *         description: Tenant ID to filter users.
  *         schema:
- *           type: string
+ *           type: integer
  *     responses:
  *       200:
  *         description: A list of formatted users.
@@ -526,7 +526,7 @@ router.get("/formatted/:tenantId", getFormattedUsersByTenantId);
  *         required: true
  *         description: Tenant ID to fetch user details.
  *         schema:
- *           type: string
+ *           type: integer
  *       - name: userId
  *         in: path
  *         required: true

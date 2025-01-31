@@ -18,7 +18,7 @@ const router = express.Router();
  *         required: true
  *         description: Tenant ID to fetch attendance records.
  *         schema:
- *           type: string
+ *           type: integer
  *     responses:
  *       200:
  *         description: A list of attendance records.
@@ -42,7 +42,7 @@ router.get("/:tenantId", getAllAttendances);
  *         required: true
  *         description: Tenant ID to fetch attendance records.
  *         schema:
- *           type: string
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -51,7 +51,7 @@ router.get("/:tenantId", getAllAttendances);
  *             type: object
  *             properties:
  *               tenantId:
- *                 type: string
+ *                 type: integer
  *                 description: Tenant ID associated with the attendance record.
  *                 example: T001
  *               UserId:
