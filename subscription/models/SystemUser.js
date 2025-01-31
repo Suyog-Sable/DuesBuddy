@@ -11,7 +11,7 @@ const SystemUser = sequelize.define(
     Password: { type: DataTypes.STRING, allowNull: false },
     Role: { type: DataTypes.STRING, allowNull: false },
     tenantId: {
-      type: DataTypes.STRING(10), // Matches tenantId in SQL schema
+      type: DataTypes.INTEGER, // Matches tenantId in SQL schema
       allowNull: false,
       references: {
         model: "Tenant", // Ensure this matches the tenant table's name
