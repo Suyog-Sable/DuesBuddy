@@ -21,7 +21,7 @@ exports.searchUsersWithSubscriptions = async (req, res) => {
       return res.status(404).json({ message: "Tenant not found." });
     }
 
-    const searchCriteria = {};
+    const searchCriteria = { TenantId: tenantId }; // Ensure only users of the specified tenant are fetched
     if (Name) {
       searchCriteria.Name = { [Op.like]: `%${Name}%` };
     }
@@ -119,7 +119,6 @@ exports.searchUsersWithSubscriptions = async (req, res) => {
 };
 
 // user detailed information
-
 exports.getUserWithSubscriptions = async (req, res) => {
   try {
     const { tenantId, id: userId } = req.params;

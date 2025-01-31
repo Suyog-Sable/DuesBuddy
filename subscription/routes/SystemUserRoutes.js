@@ -1,172 +1,235 @@
 const express = require("express");
 const {
-  getSystemUsersByTenantId,
-  createSystemUser,
-  updateSystemUser,
-  deleteSystemUser,
-} = require("../controllers/SystemUserController");
+  createTenant,
+  getAllTenants,
+  getTenantById,
+  updateTenant,
+  deleteTenant,
+  validateTenantCredentials,
+} = require("../controllers/TenantController");
+
 const router = express.Router();
 
 /**
  * @swagger
- * /system-users/{tenantId}:
- *   get:
- *     tags:
- *       - SystemUser
- *     summary: Get all system users by tenant ID
- *     parameters:
- *       - name: tenantId
- *         in: path
- *         required: true
- *         description: Tenant ID to fetch associated system users.
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: A list of system users.
- *       404:
- *         description: No system users found.
- *       500:
- *         description: Server error.
+ * tags:
+ *   name: Tenants
+ *   description: API endpoints for managing tenants
  */
-router.get("/:tenantId", getSystemUsersByTenantId);
 
 /**
  * @swagger
- * /system-users:
+ * components:
+ *   schemas:
+ *     Tenant:
+ *       type: object
+ *       required:
+ *         - Id
+ *         - FullName
+ *         - EmailId
+ *         - MobileNo
+ *         - Location
+ *         - Password
+ *         - ConfirmPassword
+ *       properties:
+ *         Id:
+ *           type: string
+ *           description: Unique identifier for the tenant
+ *         FullName:
+ *           type: string
+ *           description: Full name of the tenant
+ *         EmailId:
+ *           type: string
+ *           format: email
+ *           description: Email address of the tenant
+ *         MobileNo:
+ *           type: string
+ *           description: Mobile number of the tenant
+ *         Location:
+ *           type: string
+ *           description: Address/location of the tenant
+ *         Password:
+ *           type: string
+ *           description: Password for the tenant
+ *         ConfirmPassword:
+ *           type: string
+ *           description: Confirmation of the password
+ *       example:
+ *         Id: "12345"
+ *         FullName: "John Doe"
+ *         EmailId: "johndoe@example.com"
+ *         MobileNo: "9876543210"
+ *         Location: "New York, USA"
+ *         Password: "password123"
+ *         ConfirmPassword: "password123"
+ */
+
+/**
+ * @swagger
+ * /tenants:
  *   post:
- *     tags:
- *       - SystemUser
- *     summary: Create a new system user
+ *     summary: Create a new tenant
+ *     tags: [Tenants]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               FullName:
- *                 type: string
- *                 description: Full name of the system user
- *                 example: John Doe
- *               MobileNumber:
- *                 type: string
- *                 description: Mobile number of the system user
- *                 example: "1234567890"
- *               UserName:
- *                 type: string
- *                 description: Username of the system user
- *                 example: johndoe
- *               Password:
- *                 type: string
- *                 description: Password for the system user
- *                 example: Password123!
- *               Role:
- *                 type: string
- *                 description: Role of the system user
- *                 example: Admin
- *               tenantId:
- *                 type: string
- *                 description: Tenant ID associated with the system user
- *                 example: T001
+ *             $ref: '#/components/schemas/Tenant'
  *     responses:
  *       201:
- *         description: System user created successfully.
+ *         description: Tenant created successfully
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: System user created successfully.
- *                 user:
- *                   type: object
- *                   properties:
- *                     Id:
- *                       type: integer
- *                     FullName:
- *                       type: string
- *                     MobileNumber:
- *                       type: string
- *                     UserName:
- *                       type: string
- *                     Role:
- *                       type: string
- *                     tenantId:
- *                       type: string
+ *               $ref: '#/components/schemas/Tenant'
  *       500:
- *         description: Server error.
+ *         description: Server error
  */
-router.post("/", createSystemUser);
+router.post("/tenants", createTenant);
 
 /**
  * @swagger
- * /system-users/{tenantId}/{userId}:
- *   put:
- *     tags:
- *       - SystemUser
- *     summary: Update an existing system user
+ * /tenants:
+ *   get:
+ *     summary: Get all tenants
+ *     tags: [Tenants]
+ *     responses:
+ *       200:
+ *         description: List of all tenants
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Tenant'
+ *       500:
+ *         description: Server error
+ */
+router.get("/tenants", getAllTenants);
+
+/**
+ * @swagger
+ * /tenants/{id}:
+ *   get:
+ *     summary: Get a tenant by ID
+ *     tags: [Tenants]
  *     parameters:
- *       - name: tenantId
- *         in: path
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
  *         required: true
- *         description: Tenant ID for filtering the system users.
- *       - name: userId
- *         in: path
+ *         description: Tenant ID
+ *     responses:
+ *       200:
+ *         description: Tenant found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Tenant'
+ *       404:
+ *         description: Tenant not found
+ *       500:
+ *         description: Server error
+ */
+router.get("/tenants/:id", getTenantById);
+
+/**
+ * @swagger
+ * /tenants/{id}:
+ *   put:
+ *     summary: Update a tenant by ID
+ *     tags: [Tenants]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
  *         required: true
- *         description: System user ID to update.
+ *         description: Tenant ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Tenant'
+ *     responses:
+ *       200:
+ *         description: Tenant updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Tenant'
+ *       404:
+ *         description: Tenant not found
+ *       500:
+ *         description: Server error
+ */
+router.put("/tenants/:id", updateTenant);
+
+/**
+ * @swagger
+ * /tenants/{id}:
+ *   delete:
+ *     summary: Delete a tenant by ID
+ *     tags: [Tenants]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Tenant ID
+ *     responses:
+ *       204:
+ *         description: Tenant deleted successfully
+ *       404:
+ *         description: Tenant not found
+ *       500:
+ *         description: Server error
+ */
+router.delete("/tenants/:id", deleteTenant);
+
+/**
+ * @swagger
+ * /tenants/validate:
+ *   post:
+ *     summary: Authenticate a tenant using EmailId and Password
+ *     tags: [Tenants]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - EmailId
+ *               - Password
  *             properties:
- *               FullName:
+ *               EmailId:
  *                 type: string
- *               MobileNumber:
- *                 type: string
- *               UserName:
- *                 type: string
+ *                 description: Registered Email ID
  *               Password:
  *                 type: string
- *               Role:
- *                 type: string
+ *                 description: Password for the tenant
+ *             example:
+ *               EmailId: "johndoe@example.com"
+ *               Password: "password123"
  *     responses:
  *       200:
- *         description: System user updated successfully.
- *       404:
- *         description: System user not found.
+ *         description: Authentication successful, returns tenant object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Tenant'
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Invalid credentials
  *       500:
- *         description: Server error.
+ *         description: Server error
  */
-router.put("/:tenantId/:userId", updateSystemUser);
-
-/**
- * @swagger
- * /system-users/{tenantId}/{userId}:
- *   delete:
- *     tags:
- *       - SystemUser
- *     summary: Delete a system user
- *     parameters:
- *       - name: tenantId
- *         in: path
- *         required: true
- *         description: Tenant ID for filtering the system users.
- *       - name: userId
- *         in: path
- *         required: true
- *         description: System user ID to delete.
- *     responses:
- *       200:
- *         description: System user deleted successfully.
- *       404:
- *         description: System user not found.
- *       500:
- *         description: Server error.
- */
-router.delete("/:tenantId/:userId", deleteSystemUser);
+router.post("/tenants/validate", validateTenantCredentials);
 
 module.exports = router;

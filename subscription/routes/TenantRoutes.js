@@ -19,53 +19,6 @@ const router = express.Router();
 
 /**
  * @swagger
- * components:
- *   schemas:
- *     Tenant:
- *       type: object
- *       required:
- *         - Id
- *         - FullName
- *         - EmailId
- *         - MobileNo
- *         - Location
- *         - Password
- *         - ConfirmPassword
- *       properties:
- *         Id:
- *           type: string
- *           description: Unique identifier for the tenant
- *         FullName:
- *           type: string
- *           description: Full name of the tenant
- *         EmailId:
- *           type: string
- *           format: email
- *           description: Email address of the tenant
- *         MobileNo:
- *           type: string
- *           description: Mobile number of the tenant
- *         Location:
- *           type: string
- *           description: Address/location of the tenant
- *         Password:
- *           type: string
- *           description: Password for the tenant
- *         ConfirmPassword:
- *           type: string
- *           description: Confirmation of the password
- *       example:
- *         Id: "12345"
- *         FullName: "John Doe"
- *         EmailId: "johndoe@example.com"
- *         MobileNo: "9876543210"
- *         Location: "New York, USA"
- *         Password: "password123"
- *         ConfirmPassword: "password123"
- */
-
-/**
- * @swagger
  * /tenants:
  *   post:
  *     summary: Create a new tenant
