@@ -20,7 +20,7 @@ const router = express.Router();
  *         required: true
  *         description: Tenant ID to fetch payment history.
  *         schema:
- *           type: string
+ *           type: integer
  *     responses:
  *       200:
  *         description: A list of payment history records.
@@ -44,7 +44,7 @@ router.get("/:tenantId", getPaymentHistoryByTenantId);
  *         required: true
  *         description: Tenant ID to fetch payment history.
  *         schema:
- *           type: string
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -85,10 +85,6 @@ router.get("/:tenantId", getPaymentHistoryByTenantId);
  *                 type: string
  *                 format: date-time
  *                 description: Date of payment.
- *               CreatedBy:
- *                 type: integer
- *                 description: ID of the user who created the record.
- *                 example: 1
  *     responses:
  *       201:
  *         description: Payment record created successfully.
@@ -109,10 +105,14 @@ router.post("/", createPaymentHistory);
  *         in: path
  *         required: true
  *         description: Tenant ID for filtering the payment record.
+ *         schema:
+ *           type: integer
  *       - name: paymentId
  *         in: path
  *         required: true
  *         description: Payment record ID to update.
+ *         schema:
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -136,8 +136,6 @@ router.post("/", createPaymentHistory);
  *               PaymentDate:
  *                 type: string
  *                 format: date
- *               UpdatedBy:
- *                 type: integer
  *     responses:
  *       200:
  *         description: Payment record updated successfully.
@@ -160,10 +158,14 @@ router.put("/:tenantId/:paymentId", updatePaymentHistory);
  *         in: path
  *         required: true
  *         description: Tenant ID for filtering the payment records.
+ *         schema:
+ *           type: integer
  *       - name: paymentId
  *         in: path
  *         required: true
  *         description: Payment record ID to delete.
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Payment record deleted successfully.

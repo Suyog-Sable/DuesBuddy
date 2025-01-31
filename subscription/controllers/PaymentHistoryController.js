@@ -38,7 +38,7 @@ exports.getPaymentHistoryByTenantId = async (req, res) => {
     });
 
     if (!tenant) {
-      return res.status(404).json({ message: "Tenant not found." });
+      return res.status(404).json({ message: "Payment History not found." });
     }
 
     const response = {

@@ -11,7 +11,7 @@ const PaymentHistory = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    tenantId: { type: DataTypes.STRING, allowNull: false },
+    tenantId: { type: DataTypes.INTEGER, allowNull: false },
 
     UserId: {
       type: DataTypes.INTEGER,
@@ -44,15 +44,18 @@ const PaymentHistory = sequelize.define(
         const rawValue = this.getDataValue("PaymentDate");
         // Convert the raw stored date to IST (Indian Standard Time) when fetching
         if (rawValue) {
-          return moment.utc(rawValue).tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
+          return moment
+            .utc(rawValue)
+            .tz("Asia/Kolkata")
+            .format("YYYY-MM-DD HH:mm:ss");
         }
         return null;
       },
       set(value) {
         // Convert incoming date to IST before saving and store it as UTC in the database
-        const dateInIST = moment.tz(value, 'Asia/Kolkata');  // Convert input value to IST
-        const dateInUTC = dateInIST.utc().toDate();          // Convert to UTC before storing
-        this.setDataValue("PaymentDate", dateInUTC);         // Store as UTC in DB
+        const dateInIST = moment.tz(value, "Asia/Kolkata"); // Convert input value to IST
+        const dateInUTC = dateInIST.utc().toDate(); // Convert to UTC before storing
+        this.setDataValue("PaymentDate", dateInUTC); // Store as UTC in DB
       },
     },
     CreatedBy: {
