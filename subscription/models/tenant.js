@@ -8,6 +8,7 @@ const Tenant = sequelize.define(
     Id: {
       type: DataTypes.INTEGER,
       primaryKey: true, // Primary key in the Tenants table
+      autoIncrement: true,
     },
     FullName: { type: DataTypes.STRING(50), allowNull: false },
     EmailId: { type: DataTypes.STRING(100), allowNull: false },

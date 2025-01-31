@@ -19,6 +19,43 @@ const router = express.Router();
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     Tenant:
+ *       type: object
+ *       required:
+ *         - FullName
+ *         - EmailId
+ *         - MobileNo
+ *         - Location
+ *         - Password
+ *       properties:
+ *         FullName:
+ *           type: string
+ *           description: Full name of the tenant
+ *         EmailId:
+ *           type: string
+ *           format: email
+ *           description: Email address of the tenant
+ *         MobileNo:
+ *           type: string
+ *           description: Mobile number of the tenant
+ *         Location:
+ *           type: string
+ *           description: Address/location of the tenant
+ *         Password:
+ *           type: string
+ *           description: Password for the tenant
+ *       example:
+ *         FullName: "John Doe"
+ *         EmailId: "johndoe@example.com"
+ *         MobileNo: "9876543210"
+ *         Location: "New York, USA"
+ *         Password: "password123"
+ */
+
+/**
+ * @swagger
  * /tenants:
  *   post:
  *     summary: Create a new tenant
@@ -71,7 +108,7 @@ router.get("/tenants", getAllTenants);
  *       - in: path
  *         name: id
  *         schema:
- *           type: integer
+ *           type: string
  *         required: true
  *         description: Tenant ID
  *     responses:
@@ -98,7 +135,7 @@ router.get("/tenants/:id", getTenantById);
  *       - in: path
  *         name: id
  *         schema:
- *           type: integer
+ *           type: string
  *         required: true
  *         description: Tenant ID
  *     requestBody:
@@ -131,7 +168,7 @@ router.put("/tenants/:id", updateTenant);
  *       - in: path
  *         name: id
  *         schema:
- *           type: integer
+ *           type: string
  *         required: true
  *         description: Tenant ID
  *     responses:

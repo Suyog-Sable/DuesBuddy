@@ -53,9 +53,9 @@ router.get("/:tenantId", getPaymentHistoryByTenantId);
  *             type: object
  *             properties:
  *               tenantId:
- *                 type: string
+ *                 type: integer
  *                 description: Tenant ID associated with the payment record.
- *                 example: T001
+ *                 example: 1
  *               UserId:
  *                 type: integer
  *                 description: ID of the user associated with the payment.
