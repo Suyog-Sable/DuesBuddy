@@ -33,7 +33,9 @@ exports.getAllUserSubscriptionPlanMappings = async (req, res) => {
     });
 
     if (!tenant) {
-      return res.status(404).json({ message: "Tenant not found." });
+      return res
+        .status(404)
+        .json({ message: "User SubscriptionPlanMapping not found." });
     }
 
     const response = tenant.UserSubscriptionPlanMappings.map((mapping) => ({

@@ -1,11 +1,11 @@
-const express = require('express');
-const { 
+const express = require("express");
+const {
   getAllUserSubscriptionPlanMappings,
   getUserSubscriptionPlanMappingById,
   createUserSubscriptionPlanMapping,
   updateUserSubscriptionPlanMapping,
   deleteUserSubscriptionPlanMapping,
-} = require('../controllers/UserSubscriptionPlanMappingController');
+} = require("../controllers/UserSubscriptionPlanMappingController");
 const router = express.Router();
 
 /**
@@ -21,7 +21,7 @@ const router = express.Router();
  *         required: true
  *         description: Tenant ID associated with the user subscription plan mappings.
  *         schema:
- *           type: string
+ *           type: integer
  *     responses:
  *       200:
  *         description: A list of user subscription plan mappings.
@@ -30,7 +30,7 @@ const router = express.Router();
  *       500:
  *         description: Server error.
  */
-router.get('/:tenantId', getAllUserSubscriptionPlanMappings);
+router.get("/:tenantId", getAllUserSubscriptionPlanMappings);
 
 /**
  * @swagger
@@ -45,7 +45,7 @@ router.get('/:tenantId', getAllUserSubscriptionPlanMappings);
  *         required: true
  *         description: Tenant ID associated with the user subscription plan mapping.
  *         schema:
- *           type: string
+ *           type: integer
  *       - name: id
  *         in: path
  *         required: true
@@ -60,7 +60,7 @@ router.get('/:tenantId', getAllUserSubscriptionPlanMappings);
  *       500:
  *         description: Server error.
  */
-router.get('/:tenantId/:id', getUserSubscriptionPlanMappingById);
+router.get("/:tenantId/:id", getUserSubscriptionPlanMappingById);
 
 /**
  * @swagger
@@ -75,7 +75,7 @@ router.get('/:tenantId/:id', getUserSubscriptionPlanMappingById);
  *         required: true
  *         description: Tenant ID associated with the new user subscription plan mapping.
  *         schema:
- *           type: string
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -117,14 +117,10 @@ router.get('/:tenantId/:id', getUserSubscriptionPlanMappingById);
  *                 type: string
  *                 description: Additional remarks for the subscription plan.
  *                 example: 'First-time subscriber'
- *               CreatedBy:
- *                 type: integer
- *                 description: ID of the user who created the subscription mapping.
- *                 example: 1
  *               tenantId:
- *                 type: string
+ *                 type: integer
  *                 description: ID of the tenant .
- *                 example: "T001"
+ *                 example: "1"
  *     responses:
  *       201:
  *         description: User subscription plan mapping created successfully.
@@ -162,7 +158,7 @@ router.get('/:tenantId/:id', getUserSubscriptionPlanMappingById);
  *       500:
  *         description: Server error.
  */
-router.post('/:tenantId', createUserSubscriptionPlanMapping);
+router.post("/:tenantId", createUserSubscriptionPlanMapping);
 
 /**
  * @swagger
@@ -177,7 +173,7 @@ router.post('/:tenantId', createUserSubscriptionPlanMapping);
  *         required: true
  *         description: Tenant ID associated with the user subscription plan mapping.
  *         schema:
- *           type: string
+ *           type: integer
  *       - name: id
  *         in: path
  *         required: true
@@ -209,8 +205,6 @@ router.post('/:tenantId', createUserSubscriptionPlanMapping);
  *                 type: boolean
  *               Remarks:
  *                 type: string
- *               UpdatedBy:
- *                 type: integer
  *     responses:
  *       200:
  *         description: User subscription plan mapping updated successfully.
@@ -219,7 +213,7 @@ router.post('/:tenantId', createUserSubscriptionPlanMapping);
  *       500:
  *         description: Server error.
  */
-router.put('/:tenantId/:id', updateUserSubscriptionPlanMapping);
+router.put("/:tenantId/:id", updateUserSubscriptionPlanMapping);
 
 /**
  * @swagger
@@ -234,7 +228,7 @@ router.put('/:tenantId/:id', updateUserSubscriptionPlanMapping);
  *         required: true
  *         description: Tenant ID associated with the user subscription plan mapping.
  *         schema:
- *           type: string
+ *           type: integer
  *       - name: planId
  *         in: path
  *         required: true
@@ -249,6 +243,6 @@ router.put('/:tenantId/:id', updateUserSubscriptionPlanMapping);
  *       500:
  *         description: Server error.
  */
-router.delete('/:tenantId/:planId', deleteUserSubscriptionPlanMapping);
+router.delete("/:tenantId/:planId", deleteUserSubscriptionPlanMapping);
 
 module.exports = router;
