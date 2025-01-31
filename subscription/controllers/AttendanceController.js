@@ -3,11 +3,13 @@ const { Sequelize } = require("sequelize");
 const moment = require("moment");
 
 // Get all attendances
+
 // exports.getAllAttendances = async (req, res) => {
 //   try {
 //     const attendances = await Attendance.findAll({
 //       attributes: [
 //         "Id",
+//         "tenantId",
 //         "UserId",
 //         "CheckIn",
 //         "CheckOut",
@@ -22,20 +24,27 @@ const moment = require("moment");
 //       return res.status(404).json({ message: "No attendance records found." });
 //     }
 
-//     // Format response
+//     // Format response and convert time to the desired timezone
 //     const formattedAttendances = attendances.map((attendance) => {
 //       return {
 //         Id: attendance.Id,
 //         UserId: attendance.UserId,
+//         tenantId: attendance.tenantId,
 //         UserName: attendance.User?.FullName || null,
-//         CheckIn: attendance.CheckIn,
-//         CheckOut: attendance.CheckOut,
+//         CheckIn: moment.utc(attendance.CheckIn).format("DD MMM YYYY HH:mm:ss"), // Local time conversion
+//         CheckOut: attendance.CheckOut
+//           ? moment.utc(attendance.CheckOut).format("DD MMM YYYY HH:mm:ss")
+//           : null,
 //         CheckInBy: attendance.CheckInBy,
 //         CheckInByName: attendance.CheckInByUser?.FullName || null,
-//         CheckInDate: attendance.CheckInDate,
+//         CheckInDate: moment
+//           .utc(attendance.CheckInDate)
+//           .format("DD MMM YYYY HH:mm:ss"),
 //         CheckOutBy: attendance.CheckOutBy,
 //         CheckOutByName: attendance.CheckOutByUser?.FullName || null,
-//         CheckOutDate: attendance.CheckOutDate,
+//         CheckOutDate: attendance.CheckOutDate
+//           ? moment.utc(attendance.CheckOutDate).format("DD MMM YYYY HH:mm:ss")
+//           : null,
 //       };
 //     });
 
@@ -48,9 +57,14 @@ const moment = require("moment");
 
 exports.getAllAttendances = async (req, res) => {
   try {
+    const { tenantId } = req.params;
+
+    // Fetch attendance records for the specified tenant
     const attendances = await Attendance.findAll({
+      where: { tenantId },
       attributes: [
         "Id",
+        "tenantId",
         "UserId",
         "CheckIn",
         "CheckOut",
@@ -62,33 +76,36 @@ exports.getAllAttendances = async (req, res) => {
     });
 
     if (!attendances || attendances.length === 0) {
-      return res.status(404).json({ message: "No attendance records found." });
+      return res
+        .status(404)
+        .json({ message: "No attendance records found for this tenant." });
     }
 
     // Format response and convert time to the desired timezone
-    const formattedAttendances = attendances.map((attendance) => {
-      return {
-        Id: attendance.Id,
-        UserId: attendance.UserId,
-        UserName: attendance.User?.FullName || null,
-        CheckIn: moment.utc(attendance.CheckIn).format("DD MMM YYYY HH:mm:ss"), // Local time conversion
-        CheckOut: attendance.CheckOut
-          ? moment.utc(attendance.CheckOut).format("DD MMM YYYY HH:mm:ss")
-          : null,
-        CheckInBy: attendance.CheckInBy,
-        CheckInByName: attendance.CheckInByUser?.FullName || null,
-        CheckInDate: moment
-          .utc(attendance.CheckInDate)
-          .format("DD MMM YYYY HH:mm:ss"),
-        CheckOutBy: attendance.CheckOutBy,
-        CheckOutByName: attendance.CheckOutByUser?.FullName || null,
-        CheckOutDate: attendance.CheckOutDate
-          ? moment.utc(attendance.CheckOutDate).format("DD MMM YYYY HH:mm:ss")
-          : null,
-      };
-    });
+    const formattedAttendances = attendances.map((attendance) => ({
+      Id: attendance.Id,
+      UserId: attendance.UserId,
+      tenantId: attendance.tenantId,
+      UserName: attendance.User?.FullName || null,
+      CheckIn: attendance.CheckIn
+        ? moment.utc(attendance.CheckIn).format("DD MMM YYYY HH:mm:ss")
+        : null,
+      CheckOut: attendance.CheckOut
+        ? moment.utc(attendance.CheckOut).format("DD MMM YYYY HH:mm:ss")
+        : null,
+      CheckInBy: attendance.CheckInBy,
+      CheckInByName: attendance.CheckInByUser?.FullName || null,
+      CheckInDate: attendance.CheckInDate
+        ? moment.utc(attendance.CheckInDate).format("DD MMM YYYY HH:mm:ss")
+        : null,
+      CheckOutBy: attendance.CheckOutBy,
+      CheckOutByName: attendance.CheckOutByUser?.FullName || null,
+      CheckOutDate: attendance.CheckOutDate
+        ? moment.utc(attendance.CheckOutDate).format("DD MMM YYYY HH:mm:ss")
+        : null,
+    }));
 
-    res.status(200).json(formattedAttendances);
+    res.status(200).json({ tenantId, attendances: formattedAttendances });
   } catch (error) {
     console.error("Error fetching attendance records:", error);
     res.status(500).json({ error: error.message });

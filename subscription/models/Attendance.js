@@ -60,18 +60,18 @@ Attendance.belongsTo(Tenant, { foreignKey: "tenantId", targetKey: "Id" }); // No
 Tenant.hasMany(Attendance, { foreignKey: "tenantId", sourceKey: "Id" }); // Using 'Id' as the source key
 
 // Define associations for foreign keys
-Attendance.associate = (models) => {
-  Attendance.belongsTo(models.User, {
-    foreignKey: "UserId",
-    as: "User",
-  });
-  // Attendance.belongsTo(models.SystemUser, {
-  //   foreignKey: "CheckInBy",
-  //   as: "CheckInByUser",
-  // });
-  // Attendance.belongsTo(models.SystemUser, {
-  //   foreignKey: "CheckOutBy",
-  //   as: "CheckOutByUser",
-  // });
-};
+// Attendance.associate = (models) => {
+//   Attendance.belongsTo(models.User, {
+//     foreignKey: "UserId",
+//     as: "User",
+//   });
+//   // Attendance.belongsTo(models.SystemUser, {
+//   //   foreignKey: "CheckInBy",
+//   //   as: "CheckInByUser",
+//   // });
+//   // Attendance.belongsTo(models.SystemUser, {
+//   //   foreignKey: "CheckOutBy",
+//   //   as: "CheckOutByUser",
+//   // });
+// };
 module.exports = Attendance;

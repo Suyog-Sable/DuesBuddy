@@ -5,7 +5,7 @@ const SubscriptionPlan = require("../models/subscriptionPlan");
 const UserSubscriptionPlanMapping = require("../models/UserSubscriptionPlanMapping");
 const PaymentHistory = require("../models/PaymentHistory");
 const Attendance = require("../models/Attendance");
-
+const moment = require("moment");
 // user summary
 exports.searchUsersWithSubscriptions = async (req, res) => {
   try {
@@ -141,7 +141,7 @@ exports.getUserWithSubscriptions = async (req, res) => {
     UserSubscriptionPlanMapping.hasMany(PaymentHistory, {
       foreignKey: "SubscriptionPlanId", // Ensure payments are linked to the SubscriptionPlanId
     });
-    // 🔍 Fetch user with subscriptions, payments, and attendance
+    //  Fetch user with subscriptions, payments, and attendance
     const user = await User.findOne({
       where: { Id: userId },
       attributes: ["Id", "Name", "MobileNo", "ProfileImagePath"],
@@ -193,15 +193,36 @@ exports.getUserWithSubscriptions = async (req, res) => {
     };
 
     //  Handle Attendance (Optimized)
-    if (user.Attendances.length > 0) {
-      const isSameDay = (date1, date2) =>
-        date1.getFullYear() === date2.getFullYear() &&
-        date1.getMonth() === date2.getMonth() &&
-        date1.getDate() === date2.getDate();
 
-      const todayAttendance = user.Attendances.find((attendance) =>
-        isSameDay(new Date(attendance.CheckIn), currentDate)
+    console.log("Attendance", user.Attendances);
+    if (user.Attendances.length > 0) {
+      // const isSameDay = (date1, date2) =>
+      //   date1.getFullYear() === date2.getFullYear() &&
+      //   date1.getMonth() === date2.getMonth() &&
+      //   date1.getDate() === date2.getDate();
+
+      const isSameDay = (date1, date2) =>
+        moment.utc(date1).format("YYYY-MM-DD") ===
+        moment.utc(date2).format("YYYY-MM-DD");
+      const todayAttendance = user.Attendances.find(
+        (attendance) =>
+          attendance.CheckIn && isSameDay(attendance.CheckIn, currentDate)
       );
+
+      // console.log("Current Date:", currentDate);
+      // console.log(
+      //   "User Attendances:",
+      //   user.Attendances.map((a) => ({
+      //     CheckIn: a.CheckIn,
+      //     FormattedCheckIn: a.CheckIn
+      //       ? new Date(a.CheckIn).toISOString()
+      //       : "null",
+      //   }))
+      // );
+
+      // const todayAttendance = user.Attendances.find((attendance) =>
+      //   isSameDay(new Date(attendance.CheckIn), currentDate)
+      // );
 
       if (todayAttendance) {
         output.Attendance = {
