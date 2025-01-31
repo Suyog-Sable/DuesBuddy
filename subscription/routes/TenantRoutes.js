@@ -71,7 +71,7 @@ router.get("/tenants", getAllTenants);
  *       - in: path
  *         name: id
  *         schema:
- *           type: string
+ *           type: integer
  *         required: true
  *         description: Tenant ID
  *     responses:
@@ -98,7 +98,7 @@ router.get("/tenants/:id", getTenantById);
  *       - in: path
  *         name: id
  *         schema:
- *           type: string
+ *           type: integer
  *         required: true
  *         description: Tenant ID
  *     requestBody:
@@ -131,7 +131,7 @@ router.put("/tenants/:id", updateTenant);
  *       - in: path
  *         name: id
  *         schema:
- *           type: string
+ *           type: integer
  *         required: true
  *         description: Tenant ID
  *     responses:
