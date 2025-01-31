@@ -138,7 +138,9 @@ exports.getUserWithSubscriptions = async (req, res) => {
       foreignKey: "UserId",
     });
     User.hasMany(Attendance, { foreignKey: "UserId" });
-
+    UserSubscriptionPlanMapping.hasMany(PaymentHistory, {
+      foreignKey: "SubscriptionPlanId", // Ensure payments are linked to the SubscriptionPlanId
+    });
     // 🔍 Fetch user with subscriptions, payments, and attendance
     const user = await User.findOne({
       where: { Id: userId },
@@ -226,14 +228,13 @@ exports.getUserWithSubscriptions = async (req, res) => {
 
     //  Process Subscriptions and Payments
     output.Subscriptions = user.UserSubscriptionPlanMappings.map((mapping) => {
-      const totalPaid = mapping.PaymentHistories
-        ? mapping.PaymentHistories.reduce(
-            (acc, payment) => acc + (payment.AmountReceived || 0),
-            0
-          )
-        : 0;
-
+      const payments = mapping.PaymentHistories || [];
+      const totalPaid = payments.reduce(
+        (acc, payment) => acc + (payment.AmountReceived || 0),
+        0
+      );
       const remainingDue = mapping.Price - totalPaid;
+
       const isActive =
         mapping.isActive && new Date(mapping.ValidUntil) > currentDate;
 

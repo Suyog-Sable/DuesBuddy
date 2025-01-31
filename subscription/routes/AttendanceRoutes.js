@@ -53,7 +53,6 @@ router.get("/:tenantId", getAllAttendances);
  *               tenantId:
  *                 type: integer
  *                 description: Tenant ID associated with the attendance record.
- *                 example: T001
  *               UserId:
  *                 type: integer
  *                 description: ID of the user associated with attendance.
@@ -65,7 +64,7 @@ router.get("/:tenantId", getAllAttendances);
  *               CheckOutBy:
  *                 type: integer
  *                 description: ID of the user who checked out the record.
- *                 example: 2
+ *                 example: 1
  *     responses:
  *       201:
  *         description: Attendance record created successfully.
