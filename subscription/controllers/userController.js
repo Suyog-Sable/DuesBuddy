@@ -7,6 +7,7 @@ const UserSubscriptionPlanMapping = require("../models/UserSubscriptionPlanMappi
 const SubscriptionPlan = require("../models/subscriptionPlan");
 const upload = require("../middleware/upload"); // Import your multer upload configuration
 const PaymentHistory = require("../models/PaymentHistory");
+const { Op, Sequelize } = require("sequelize");
 
 // Suyog
 // Handle user folder and image uploads
@@ -215,6 +216,8 @@ exports.getUserByIdAndTenant = async (req, res) => {
 };
 // Create a new User for a specific TenantId
 
+// Update User by UserId and TenantId
+
 exports.createUser = async (req, res) => {
   try {
     // Process file upload
@@ -270,24 +273,46 @@ exports.createUser = async (req, res) => {
         });
       }
 
-      // Create user with optional profileImage & adharImage
-      const user = await User.create({
-        tenantId,
-        Name,
-        Wing,
-        RoomNo,
-        MobileNo,
-        EmailId,
-        Gender,
-        DOB: formattedDOB,
-        IsTrainer,
-        Location,
-        CreatedBy: null,
-        PermanentAddress,
-        PresentAddress,
-        profileImage: null, // Default to null if not provided
-        adharImage: null, // Default to null if not provided
-      });
+      let user; // Fix: Allow reassignment
+
+      try {
+        user = await User.create({
+          tenantId,
+          Name,
+          Wing,
+          RoomNo,
+          MobileNo,
+          EmailId,
+          Gender,
+          DOB: formattedDOB,
+          IsTrainer,
+          Location,
+          CreatedBy: null,
+          PermanentAddress,
+          PresentAddress,
+          profileImage: null, // Default to null if not provided
+          adharImage: null, // Default to null if not provided
+        });
+      } catch (error) {
+        if (error.name === "SequelizeUniqueConstraintError") {
+          const duplicateFields = error.errors.map((err) => ({
+            field: err.path,
+            message: `${err.path} must be unique.`,
+          }));
+
+          return res.status(400).json({
+            message:
+              "Validation error: Duplicate value for email or MobileNumber.",
+            errors: duplicateFields,
+          });
+        }
+
+        console.error("Error creating user:", error);
+        return res.status(500).json({
+          message: "An error occurred while creating the user.",
+          error: error.message,
+        });
+      }
 
       // Handle file upload only if files exist
       if (req.files && Object.keys(req.files).length > 0) {
@@ -296,8 +321,8 @@ exports.createUser = async (req, res) => {
         await handleUserFolderAndImages(tempFolder, user.Id, files, req);
       }
 
-      // Respond with success
-      res.status(201).json({
+      // Respond with success (fix: user object is now defined)
+      return res.status(201).json({
         id: user.Id,
         name: user.Name,
         mobileNumber: user.MobileNo,
@@ -311,8 +336,6 @@ exports.createUser = async (req, res) => {
     });
   }
 };
-
-// Update User by UserId and TenantId
 
 exports.updateUser = async (req, res) => {
   try {
@@ -514,8 +537,6 @@ exports.getFormattedUsersByTenantId = async (req, res) => {
 //     return res.status(500).json({ message: "Internal server error.", error });
 //   }
 // };
-
-const { Op, Sequelize } = require("sequelize");
 
 exports.getUserSubscriptionPlanDetails = async (req, res) => {
   const { userId, tenantId } = req.params;
