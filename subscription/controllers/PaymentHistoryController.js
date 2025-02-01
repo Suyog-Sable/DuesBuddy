@@ -551,8 +551,6 @@ exports.createPaymentHistory = async (req, res) => {
         imagePath: paymentReceiptUrl,
       };
 
-      console.log("New Payment Data:", newPaymentData);
-
       // Create the payment record
       const newPayment = await PaymentHistory.create(newPaymentData);
 

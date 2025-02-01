@@ -194,7 +194,6 @@ exports.getUserWithSubscriptions = async (req, res) => {
 
     //  Handle Attendance (Optimized)
 
-    console.log("Attendance", user.Attendances);
     if (user.Attendances.length > 0) {
       // const isSameDay = (date1, date2) =>
       //   date1.getFullYear() === date2.getFullYear() &&
