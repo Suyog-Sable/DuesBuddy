@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   getSubscriptionPlansByTenantId,
+  getSubscriptionPlanById, // New function to get subscription plan by Id
   createSubscriptionPlan,
   updateSubscriptionPlan,
   deleteSubscriptionPlan,
@@ -18,7 +19,7 @@ const router = express.Router();
  *       - name: tenantId
  *         in: path
  *         required: true
- *         description: Tenant ID to associate the new user.
+ *         description: Tenant ID to fetch subscription plans.
  *         schema:
  *           type: integer
  *     responses:
@@ -30,9 +31,40 @@ const router = express.Router();
  *         description: Server error.
  */
 router.get("/:tenantId", getSubscriptionPlansByTenantId);
+
 /**
  * @swagger
- * /subscription-plans:
+ * /subscription-plans/{tenantId}/{planId}:
+ *   get:
+ *     tags:
+ *       - SubscriptionPlan
+ *     summary: Get a subscription plan by tenant ID and plan ID
+ *     parameters:
+ *       - name: tenantId
+ *         in: path
+ *         required: true
+ *         description: Tenant ID to filter the subscription plan.
+ *         schema:
+ *           type: integer
+ *       - name: planId
+ *         in: path
+ *         required: true
+ *         description: Subscription plan ID.
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: The subscription plan details.
+ *       404:
+ *         description: Subscription plan not found.
+ *       500:
+ *         description: Server error.
+ */
+router.get("/:tenantId/:planId", getSubscriptionPlanById); // New route
+
+/**
+ * @swagger
+ * /subscription-plans/{tenantId}:
  *   post:
  *     tags:
  *       - SubscriptionPlan
@@ -41,7 +73,7 @@ router.get("/:tenantId", getSubscriptionPlansByTenantId);
  *       - name: tenantId
  *         in: path
  *         required: true
- *         description: Tenant ID to associate the new user.
+ *         description: Tenant ID to associate the new subscription plan.
  *         schema:
  *           type: integer
  *     requestBody:
@@ -53,31 +85,18 @@ router.get("/:tenantId", getSubscriptionPlansByTenantId);
  *             properties:
  *               Name:
  *                 type: string
- *                 description: Name of the subscription plan
- *                 example: Basic Plan
  *               Amount:
  *                 type: integer
- *                 description: Amount for the subscription plan
- *                 example: 500
  *               Days:
  *                 type: integer
- *                 description: Validity period of the subscription plan in days
- *                 example: 30
  *               tenantId:
  *                 type: integer
- *                 description: Tenant ID associated with the subscription plan
- *                 example: 1
  *               IsActive:
  *                 type: boolean
- *                 description: Whether the subscription plan is active
- *                 example: true
  *               Shortcode:
  *                 type: string
- *                 description: Shortcode for the subscription plan
- *                 example: BASIC
  *               Sessions:
  *                 type: integer
- *                 example: 0
  *     responses:
  *       201:
  *         description: Subscription plan created successfully.
@@ -111,8 +130,7 @@ router.get("/:tenantId", getSubscriptionPlansByTenantId);
  *       500:
  *         description: Server error.
  */
-
-router.post("/", createSubscriptionPlan);
+router.post("/:tenantId", createSubscriptionPlan);
 
 /**
  * @swagger
