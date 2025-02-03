@@ -108,8 +108,6 @@ router.get("/:tenantId", getSubscriptionPlansByTenantId);
  *                       type: string
  *                     Sessions:
  *                       type: integer
- *                     tenantId:
- *                       type: integer
  *       500:
  *         description: Server error.
  */
