@@ -41,7 +41,8 @@ exports.getSubscriptionPlansByTenantId = async (req, res) => {
 // Create a new subscription plan
 exports.createSubscriptionPlan = async (req, res) => {
   try {
-    const { Name, Amount, Days, tenantId, IsActive, Shortcode } = req.body;
+    const { Name, Amount, Days, tenantId, IsActive, Shortcode, Sessions } =
+      req.body;
 
     const newPlan = await SubscriptionPlan.create({
       Name,
@@ -50,6 +51,7 @@ exports.createSubscriptionPlan = async (req, res) => {
       Days,
       tenantId,
       IsActive,
+      Sessions,
     });
 
     res.status(201).json(newPlan);
@@ -63,7 +65,7 @@ exports.createSubscriptionPlan = async (req, res) => {
 exports.updateSubscriptionPlan = async (req, res) => {
   try {
     const { tenantId, planId } = req.params;
-    const { Name, Amount, Days, IsActive, Shortcode } = req.body;
+    const { Name, Amount, Days, IsActive, Shortcode, Sessions } = req.body;
 
     const plan = await SubscriptionPlan.findOne({
       where: { tenantId: tenantId, id: planId },
@@ -78,6 +80,7 @@ exports.updateSubscriptionPlan = async (req, res) => {
     plan.Days = Days || plan.Days;
     (plan.Shortcode = Shortcode || plan.Shortcode),
       (plan.IsActive = IsActive !== undefined ? IsActive : plan.IsActive);
+    plan.Sessions = Sessions || plan.Sessions;
 
     await plan.save();
 

@@ -75,6 +75,9 @@ router.get("/:tenantId", getSubscriptionPlansByTenantId);
  *                 type: string
  *                 description: Shortcode for the subscription plan
  *                 example: BASIC
+ *               Sessions:
+ *                 type: integer
+ *                 example: 0
  *     responses:
  *       201:
  *         description: Subscription plan created successfully.
@@ -103,6 +106,10 @@ router.get("/:tenantId", getSubscriptionPlansByTenantId);
  *                       type: boolean
  *                     Shortcode:
  *                       type: string
+ *                     Sessions:
+ *                       type: integer
+ *                     tenantId:
+ *                       type: integer
  *       500:
  *         description: Server error.
  */
@@ -146,6 +153,10 @@ router.post("/", createSubscriptionPlan);
  *                 type: boolean
  *               Shortcode:
  *                 type: string
+ *               Sessions:
+ *                 type: integer
+ *               tenantId:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Subscription plan updated successfully.

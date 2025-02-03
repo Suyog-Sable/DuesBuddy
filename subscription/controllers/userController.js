@@ -561,11 +561,11 @@ exports.getUserSubscriptionPlanDetails = async (req, res) => {
     // Fetch subscription plans where pending amount exists
     const subscriptionPlans = await Promise.all(
       userSubscriptions.map(async (userSubscription) => {
-        // Sum of all AmountReceived for the given subscription (Fixing ORDER BY issue)
+        // Sum of all AmountReceived for the given subscription
         const paymentData = await PaymentHistory.findAll({
           where: {
             UserId: userId,
-            SubscriptionPlanId: userSubscription.Id,
+            SubscriptionPlanId: userSubscription.Id, // Should be userSubscription.Id
             TenantId: tenantId,
           },
           attributes: [
@@ -587,7 +587,12 @@ exports.getUserSubscriptionPlanDetails = async (req, res) => {
           raw: true,
         });
 
-        return subscriptionPlan;
+        if (!subscriptionPlan) return null; // Ensure valid subscription plan
+
+        return {
+          ...subscriptionPlan,
+          Id: userSubscription.Id,
+        };
       })
     );
 
