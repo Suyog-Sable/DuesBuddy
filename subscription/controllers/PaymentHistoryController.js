@@ -1,5 +1,6 @@
 const Tenant = require("../models/tenant");
 const PaymentHistory = require("../models/PaymentHistory");
+const UserSubscriptionPlanMapping = require("../models/UserSubscriptionPlanMapping");
 const path = require("path");
 const fs = require("fs");
 require("dotenv").config();
@@ -471,10 +472,8 @@ exports.createPaymentHistory = async (req, res) => {
         TransactionRefId,
         AmountReceived,
         PaymentType,
-        // CreatedBy,
       } = req.body;
 
-      // Validate required fields
       const requiredFields = [
         "UserId",
         "SubscriptionPlanId",
@@ -482,7 +481,6 @@ exports.createPaymentHistory = async (req, res) => {
         "AmountReceived",
         "PaymentType",
       ];
-
       const missingFields = requiredFields.filter((field) => !req.body[field]);
       if (missingFields.length > 0) {
         return res.status(400).json({
@@ -490,15 +488,43 @@ exports.createPaymentHistory = async (req, res) => {
         });
       }
 
-      // Get the current time in IST (India Standard Time)
-      const currentTimeIST = moment()
+      // Fetch previous payments sum
+      const totalPaid = await PaymentHistory.sum("AmountReceived", {
+        where: {
+          UserId,
+          SubscriptionPlanId,
+          tenantId,
+        },
+      });
+      console.log("Total Amount paid", totalPaid);
+      // Fetch Subscription Plan Price
+      const subscription = await UserSubscriptionPlanMapping.findOne({
+        where: {
+          UserId,
+          Id: SubscriptionPlanId,
+          tenantId,
+        },
+        attributes: ["Price"],
+      });
+
+      if (!subscription) {
+        return res.status(404).json({ error: "Subscription not found." });
+      }
+
+      const price = subscription.Price;
+      const pendingAmount = price - (totalPaid || 0); // Handle case when no previous payments
+
+      if (AmountReceived > pendingAmount) {
+        return res.status(400).json({
+          error: `Amount received exceeds pending amount. Pending amount: ${pendingAmount}`,
+        });
+      }
+
+      // Get the current IST time
+      const formattedPaymentDate = moment()
         .tz("Asia/Kolkata")
         .format("YYYY-MM-DD HH:mm:ss");
 
-      // Now, set PaymentDate to current IST time
-      const formattedPaymentDate = currentTimeIST;
-
-      // Handle optional image upload for PaymentType "O"
       let paymentReceiptUrl = null;
       if (PaymentType === "O") {
         if (!req.files || !req.files.imagePath) {
@@ -514,7 +540,6 @@ exports.createPaymentHistory = async (req, res) => {
         );
         const userFolder = path.join(uploadsDir, String(UserId));
 
-        // Ensure user folder exists
         if (!fs.existsSync(userFolder)) {
           fs.mkdirSync(userFolder, { recursive: true });
         }
@@ -528,11 +553,9 @@ exports.createPaymentHistory = async (req, res) => {
           req.files.imagePath[0].filename
         );
 
-        // Move the file and clean up temp folder
         await fs.promises.rename(tempFilePath, paymentReceiptPath);
         await fs.promises.rm(req.tempFolder, { recursive: true, force: true });
 
-        // Construct file URL
         paymentReceiptUrl = `${uploadsUrl}/${UserId}/${req.files.imagePath[0].filename}`;
       }
 
@@ -544,10 +567,9 @@ exports.createPaymentHistory = async (req, res) => {
         TransactionRefId,
         AmountReceived,
         PaymentType,
-        PaymentDate: formattedPaymentDate, // Set to current time in IST
-        // CreatedBy,
-        CreatedDate: moment().tz("Asia/Kolkata").toISOString(), // Current date in IST with timezone
-        UpdatedDate: moment().tz("Asia/Kolkata").toISOString(), // Current date in IST with timezone
+        PaymentDate: formattedPaymentDate,
+        CreatedDate: moment().tz("Asia/Kolkata").toISOString(),
+        UpdatedDate: moment().tz("Asia/Kolkata").toISOString(),
         imagePath: paymentReceiptUrl,
       };
 
